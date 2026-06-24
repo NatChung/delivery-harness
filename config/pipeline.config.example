@@ -1,0 +1,12 @@
+# pipeline.config — sourced by scripts/orch/wt.sh (bash). Copy to <repo>/.claude/pipeline.config and fill in.
+# 每個 codebase 一個 key:對應 repo-root 下的相對路徑 + 它的主 branch。
+declare -A CODEBASE_DIR=(
+  [app]="codebases/your-app"
+  [api]="codebases/your-api"
+)
+declare -A CODEBASE_BRANCH=(
+  [app]="main"
+  [api]="main"
+)
+# 平行 worktree 落腳處(hub 工作樹之外,避免被 git add -A 掃到)
+WT_CACHE_ROOT="${WT_CACHE_ROOT:-$HOME/.cache/delivery-wt}"
