@@ -180,6 +180,25 @@ cd codebases/<repo> && git worktree prune
 
 ---
 
+## 5b. Branch / Worktree 生命週期（implement→交付）
+
+四個分支角色,別混:
+
+| 角色 | 是什麼 | 何時生 | 何時收 |
+|------|--------|--------|--------|
+| **working-branch** | 該 repo 主力開發分支(per `pipeline.config` 的 `CODEBASE_BRANCH`)| 既存 | 永存;feature land 進這 |
+| **feature/\<NNN\>-\<slug\>** | 單一 feature 真相分支,可獨立 land | pipeline prototype/implement 階段開 | land 進 working-branch 後**可留**(各 feature 成熟度不同、分開 land) |
+| **worktree** | feature branch 的隔離 checkout 目錄(`wt.sh add`)| 5-implement 派 subagent 前 | implement 完 / 放棄 → `wt.sh remove`。**worktree ≠ branch:收 worktree 不刪 branch** |
+| **integration-bundle（\<bundle-slug\>）** | 多 feature 合併上 staging 的衍生分支,可重生 | 要一起上 staging 時 | 暫時的,測完即棄;bug 修在所屬 feature branch 再**重生** bundle,別直接改 bundle |
+
+**關鍵分辨**(實測反覆被問的):
+- 「切了 feature branch 還要 worktree 嗎」→ **要**。branch 是命名;worktree 是隔離的工作目錄,讓多 feature 並行 implement 不互踩同一 checkout。
+- 「收 worktree = 刪 branch 嗎」→ **否**。`wt.sh remove` 只收工作目錄,feature branch 還在。
+- 「bug 修哪條」→ 見 §6 的「bug 修分支歸屬」。
+- 「為何從 working-branch 不是 main」→ working-branch 由 `pipeline.config` 的 `CODEBASE_BRANCH` 定,可能 = main + 未釋出功能,**未必等於 repo 的 GitHub 預設分支**。land / PR base 對準 `CODEBASE_BRANCH`,別假設 main。
+
+---
+
 ## 6. Build / Merge / 排程
 
 **Build（可並行，但要隔離）**：
