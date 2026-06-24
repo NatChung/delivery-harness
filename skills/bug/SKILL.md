@@ -22,6 +22,11 @@ Rework: `advance <id> --to bug-debug` from bug-repro or bug-verify. Triage-rejec
 ## How to drive a bug
 
 1. `new <slug> --track bug --severity <…>` — set severity honestly (it gates the hotfix lane).
+**開工前先判斷分支歸屬**(細節見 orchestrator skill 的「bug 修分支歸屬」):
+這個 bug 是「**未上線 feature 的缺陷**」還是「**獨立 / 已上線缺陷**」?
+- 未上線 feature → **不走本 bug track**,回該 feature branch 修、重生 integration-bundle。
+- 獨立 / 已上線 → 本 bug track 繼續,開 fix 分支。
+
 2. **bug-debug** — use `superpowers:systematic-debugging`. **先用 codegraph 追 root cause**(`mcp__codegraph__codegraph_explore` 理解出問題的區塊;`codegraph_callers`/`codegraph_callees`/`codegraph_impact` 追呼叫/資料流、找壞值從哪來 + 改這會炸到誰)—— 不要無腦 grep。Find the root cause (Phase 1 evidence-gathering — do NOT guess). Record it in the ticket "Root cause" section. If it can't be reproduced, `advance --to on-hold` and gather more data. If it's not-a-bug/dup/wontfix, `advance --to rejected`.
 3. **bug-repro** — write ONE failing test that reproduces the bug (`superpowers:test-driven-development`). Layer per the bug:
    - logic/calc → unit test (`<unit: 你的單元測試框架>`)

@@ -210,6 +210,10 @@ cd codebases/<repo> && git worktree prune
 
 **排程**：ticket 的 `conflicts:` 標記的 feature（動到同檔/同 branch）→ **不同時 implement**，錯開排程避免 merge 衝突。
 
+**bug 修分支歸屬**:
+- staging / 整合 UAT 抓到的「**未上線 feature 的 bug**」→ 修在該 **feature/\<NNN\>** branch(它還沒 land),再**重生** integration-bundle。**別直接在 bundle 改**,否則該 feature 日後單獨 land 會漏掉這個 fix。
+- 「**獨立缺陷 / 已上線 code 的 bug**」→ 走 bug track(`cli.py new \<slug\> --track bug`),開 fix 分支照 bug 流程。
+
 ---
 
 ## 6b. Implement 之後（6-uat → 交付）
