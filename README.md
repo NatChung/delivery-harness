@@ -95,7 +95,7 @@ mcp/
 docs/
   2026-06-17-feature-delivery-pipeline-design.md   # full spec
   2026-06-23-parallel-feature-orchestrator-design.md
-  2026-06-23-stg-review-bundle-convention.md
+  2026-06-23-integration-bundle-convention.md
 ```
 
 ---

@@ -88,7 +88,7 @@ pipeline 每一步(spec-review、plan-review、各 implement task、build…)的
 多條 feature 最終 merge 進同一 submodule dev branch(`<CODEBASE_BRANCH>`)→ 重疊檔案會衝。
 
 - **序列化**:一條先 merge → `<CODEBASE_BRANCH>`;其餘 **rebase** 到新 `<CODEBASE_BRANCH>` 再進。orchestrator 不並行 merge。
-- 多功能要一起上 STG → 走既有 `docs/2026-06-23-stg-review-bundle-convention.md`(本來就處理打包/落地)。
+- 多功能要一起上 staging → 走既有 `docs/2026-06-23-integration-bundle-convention.md`(本來就處理打包/落地)。
 - intake 階段沿用 ticket 的 `conflicts:` 標記,orchestrator 對「會動到同檔/同 branch」的 feature 排程上避免同時 implement。
 
 ## 失敗模式 + 處理(review 抓出的,明列)

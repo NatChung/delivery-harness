@@ -187,7 +187,7 @@ cd codebases/<repo> && git worktree prune
 - UI/integration test 各給不同 runner/emulator
 - **並行上限 = 機器資源**（spec/plan/review 純思考類可全並行）
 
-**Merge（序列化）**：一條先 merge → **該 codebase 的主 branch**（各 codebase 主 branch 見 `.claude/pipeline.config` 的 `CODEBASE_BRANCH`）；其餘 **rebase** 到新主 branch 再進。多條一起上 STG → 走 `stg-review-bundle-convention`（`stg-review-<bundle-slug>` 整合分支）。
+**Merge（序列化）**：一條先 merge → **該 codebase 的主 branch**（各 codebase 主 branch 見 `.claude/pipeline.config` 的 `CODEBASE_BRANCH`）；其餘 **rebase** 到新主 branch 再進。多條一起上 staging → 走 `integration-bundle-convention`（`integration-bundle-<bundle-slug>` 整合分支）。
 
 **排程**：ticket 的 `conflicts:` 標記的 feature（動到同檔/同 branch）→ **不同時 implement**，錯開排程避免 merge 衝突。
 
