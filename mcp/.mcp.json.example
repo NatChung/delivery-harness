@@ -1,0 +1,6 @@
+{
+  "mcpServers": {
+    "_comment": "預留:測試 web/app 用的 MCP。取消註解並依環境填入。",
+    "playwright": { "command": "npx", "args": ["-y", "@playwright/mcp@latest"] }
+  }
+}
