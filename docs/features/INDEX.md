@@ -5,5 +5,3 @@
 
 | id | slug | track | phase | created |
 |----|------|-------|-------|---------|
-| 001 | smoke-probe | lite | 0-intake | 2026-06-24 |
-| 002 | smoke-probe | lite | 0-intake | 2026-06-24 |
