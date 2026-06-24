@@ -212,6 +212,18 @@ cd codebases/<repo> && git worktree prune
 
 ---
 
+## 6b. Implement 之後（6-uat → 交付）
+
+⚠️ **並行段在此結束、進序列段（P4）。** intake→implement 是多 feature 並行(subagent fan-out);**6-uat 之後是單線程** —— 部署、人眼/模擬器/瀏覽器 UAT、客戶簽核都不可並行。orchestrator 的「並行」價值此段歸零,別再期待 fan-out,改成一條一條序列推。
+
+流程:
+1. **6-uat → 部署**:多 feature 一起上 staging → 走 integration-bundle(§5b)合併 → 照**該 repo 的部署 runbook 部署**。runbook 是 **fork 本地文件**(upstream 不含,因含 cluster 名/CLI 指令/憑證);fork 在 `pipeline.config` 旁放一份 deploy doc,skill 指過去。
+2. **staging UAT**:單線程,主迴圈驅動測試 MCP(browser/mobile)跑 happy + edge。
+3. **staging 抓到 bug → 接回 pipeline**:依 §6「bug 修分支歸屬」判斷修哪條 → 修 → **重生** integration-bundle → 重測(branch 操作後務必複測,別假設 binary 沒重編就沒事)。
+4. 全綠 → 客戶簽核 → `cli.py advance` 到 done → feature land 進 working-branch。
+
+---
+
 ## 7. Mock Gate（landing 前強制）
 
 Landing 前必須全過，才可 advance 到 done：
