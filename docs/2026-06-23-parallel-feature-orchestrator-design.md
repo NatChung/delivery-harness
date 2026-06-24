@@ -75,13 +75,13 @@ pipeline 每一步(spec-review、plan-review、各 implement task、build…)的
 
 ## Build / 並發的誠實面(設對期待)
 
-Flutter build **可以**並行(不同 worktree 的 `build/`、`.dart_tool`、iOS DerivedData 各自獨立;`flutter build` 不佔 port;run/test 的 VM service port flutter 自動挑空的)。**要處理的是共用可變狀態,不是「不能並行」**:
-- **pub cache**(`~/.pub-cache` 共用):兩個**冷** `pub get` 同時寫會 race → **暖 cache 或序列化 `pub get` 這一步**(build 本身可並行)。
-- **Gradle**(Android,`~/.gradle` 共用):會 lock/contend → 每個 build 設 **`GRADLE_USER_HOME`** 隔離,或接受變慢。
-- **`flutter run`/integration_test 上裝置**:**各給不同 simulator**(同一個 sim 一個 app 會撞);port 自動不撞。
+<mobile build> **可以**並行(不同 worktree 的 `build/`、`<build cache>`、`<emulator/simulator>` 各自獨立;`<mobile build>` 不佔 port;run/test 的 VM service port 自動挑空的)。**要處理的是共用可變狀態,不是「不能並行」**:
+- **package cache**(共用):兩個**冷** package install 同時寫會 race → **暖 cache 或序列化 install 這一步**(build 本身可並行)。
+- **build tool daemon**(如適用,shared home 共用):會 lock/contend → 每個 build 設隔離的 home 或接受變慢。
+- **`<mobile build>` run/integration_test 上裝置**:**各給不同 `<emulator/simulator>`**(同一個 sim 一個 app 會撞);port 自動不撞。
 - **真正的並發上限 = 機器資源(CPU/RAM/IO)**,不是 correctness;2 個同時 build 一般筆電會喘 → orchestrator 設一個**資源型並發上限**(可能就 1–2),而不是「禁止並行」。
 
-**設對期待**:跨 submodule(app build 與 api Go test)幾乎無痛並行;同 submodule 多個 Flutter build 並行**做得到但吃資源**,上限由機器決定。spec/plan/review 那些**純 subagent 思考**的等待最好 overlap(不吃 build 資源)。
+**設對期待**:跨 submodule(app build 與 api 測試)幾乎無痛並行;同 submodule 多個 app build 並行**做得到但吃資源**,上限由機器決定。spec/plan/review 那些**純 subagent 思考**的等待最好 overlap(不吃 build 資源)。
 
 ## Merge / landing 序列化
 
@@ -111,7 +111,7 @@ Flutter build **可以**並行(不同 worktree 的 `build/`、`.dart_tool`、iOS
 
 - **prose-enforced 協定不如 code 可靠**:orchestrator 的鐵則(永遠讀 confirmation log、subagent 框死在生產、never 讓 subagent 叫 review)靠 model 守 markdown,不像 `cli.py` 的 `valid_next` 是硬 enforce。→ 鐵則**盡量少而硬**;能塞進 cli.py 的(如 phase 規則)就別放 prose。
 - **provisional 決策的代價**:幫客戶決定錯 → rework。前提是「改的成本 < 等客戶的成本」,對**可逆**決策成立;**不可逆**的仍要真問。
-- **真值得並行的場景有限**:客戶若回得慢,瓶頸仍在客戶;orchestrator 加速的是「agent 操作的數分鐘等待」那段。≥2 條有重疊自動等待才開(同 submodule 多 Flutter build 可並行但吃資源、上限看機器,見上)。
+- **真值得並行的場景有限**:客戶若回得慢,瓶頸仍在客戶;orchestrator 加速的是「agent 操作的數分鐘等待」那段。≥2 條有重疊自動等待才開(同 submodule 多 app build 可並行但吃資源、上限看機器,見上)。
 - **「subagent 不准叫 review」是最脆弱那條 prose 鐵則**(它跟 skill 自己寫的「dispatch review」直接打架)→ dispatch prompt 必須**明寫覆蓋**:「忽略 skill 的 review/decision 步驟,做完生產**停、回傳**」,別只靠 model 自己權衡誰贏。
 - **mock-data 洩漏被並行放大**:N 個 worktree + 半確認的 provisional + 序列化 merge → 帶 `PROTOTYPE-MOCK` 又沒確認的 feature 誤 landing 機率升。**parallel 模式 landing 前強制**:跑 mock gate(`grep -rnE "PROTOTYPE-MOCK|FEATURE-MOCK"`)+ confirmation log 有 `BLOCKING` 未確認 → 不准 landing。
 

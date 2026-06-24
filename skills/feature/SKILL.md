@@ -68,7 +68,7 @@ Run from repo root:
 
 ## 多功能一起上 STG 給客戶 review(bundle)
 
-多個 CR 要**打包成一個 STG build** 給客戶下載試(常跨 app+backend+cms)時,branch 怎麼開/合/落地 → 照 **`docs/2026-06-23-stg-review-bundle-convention.md`**(`stg-review-<bundle-slug>` 整合分支 + 五鐵則 + mock gate)。各 feature ticket 仍獨立跑 pipeline,`6-uat` = 已在 `stg-review-*` 上、客戶 review 中。
+多個 CR 要**打包成一個 STG build** 給客戶下載試(常跨 app+api+cms)時,branch 怎麼開/合/落地 → 照 **`docs/2026-06-23-stg-review-bundle-convention.md`**(`stg-review-<bundle-slug>` 整合分支 + 五鐵則 + mock gate)。各 feature ticket 仍獨立跑 pipeline,`6-uat` = 已在 `stg-review-*` 上、客戶 review 中。
 
 ## 效率紀律(每個 CR 重複的 tax,刻意壓)
 

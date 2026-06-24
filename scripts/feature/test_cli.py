@@ -73,12 +73,12 @@ class CliTestBase(unittest.TestCase):
 
 class TestNew(CliTestBase):
     def test_new_creates_ticket_and_updates_index(self):
-        r = run(self.root, "new", "appointment-booking", "--track", "full",
+        r = run(self.root, "new", "search-filter", "--track", "full",
                 "--date", "2026-06-22")
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("001", r.stdout)
         ticket = os.path.join(self.root, "docs", "features",
-                              "001-appointment-booking", "ticket.md")
+                              "001-search-filter", "ticket.md")
         self.assertTrue(os.path.exists(ticket))
         with open(ticket) as f:
             body = f.read()
@@ -86,7 +86,7 @@ class TestNew(CliTestBase):
         self.assertIn("track: full", body)
         self.assertIn("phase: 0-intake", body)
         with open(os.path.join(self.root, "docs", "features", "INDEX.md")) as f:
-            self.assertIn("| 001 | appointment-booking | full | 0-intake |", f.read())
+            self.assertIn("| 001 | search-filter | full | 0-intake |", f.read())
 
     def test_new_second_feature_gets_002(self):
         run(self.root, "new", "a", "--track", "full", "--date", "2026-06-22")

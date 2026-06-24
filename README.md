@@ -20,7 +20,7 @@ The agent doesn't free-form its way through work. Instead:
 2. **`scripts/feature/cli.py`** enforces legal phase transitions and refuses illegal ones.
 3. **Three skills** (`/feature`, `/bug`, `/orchestrator`) give Claude entry points that read the ticket and drive it forward — never guessing, always verifying.
 
-The result is delivery you can audit: every phase change is a commit, every AC is written before implementation, and running Claude a week later on the same ticket picks up exactly where it left off.
+The result is delivery you can audit: every phase change is recorded in the ticket, every AC is written before implementation, and running Claude a week later on the same ticket picks up exactly where it left off.
 
 ---
 
