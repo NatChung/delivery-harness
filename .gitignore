@@ -2,3 +2,5 @@
 __pycache__/
 *.pyc
 .claude/pipeline.config
+.superpowers/
+.claude/sdd/
