@@ -153,7 +153,7 @@ history:                # 重大轉移(含 rework loop-back + 原因)
 
 - **AC/BDD 格式 = Gherkin**(Given/When/Then),寫在 spec.md;每 scenario 給 id。**不**強制 Cucumber engine —— Gherkin 當規格語言,實測由各平台原生框架實作並 ref scenario id。
 - **TestID 命名**:Flutter `Key('feat-<NNN>-<area>-<element>')`;Vue/web `data-testid="feat-<NNN>-<area>-<element>"`。feature-scoped、穩定。
-- **測試框架(per 平台)**:Flutter widget + `integration_test`;cms Vue(vue-cli/webpack)→ **jest + @vue/test-utils + Playwright e2e**(注意:**非 vitest**,vitest 綁 Vite,cms 是 webpack);backend `go test`;chat jest(+e2e)。
+- **測試框架(per 平台)**:Flutter widget + `integration_test`;cms Vue(vue-cli/webpack)→ **jest + @vue/test-utils + Playwright e2e**(注意:**非 vitest**,vitest 綁 Vite,cms 是 webpack);api `go test`;chat jest(+e2e)。
 - **lite / 純後端型 feature 的 Phase 3**:AC/BDD 寫在 **API / 服務契約**上(Given request → When → Then response/DB),**無 UI inventory / TestID**(或最小)。Phase 3 的「diff→UI inventory→注 TestID」只適用有新 UI 面的 full track。
 
 ## Skill 盤點
@@ -172,7 +172,7 @@ history:                # 重大轉移(含 rework loop-back + 原因)
 1. **測試基建**(AC/BDD+TDD gate 需要):
    - **cms (Vue):零測試** → **獨立 sub-spec** bootstrap(jest+@vue/test-utils+Playwright;webpack 非 Vite,別用 vitest)。**block 功能 C**。
    - app:有 unit/widget+bloc_test,**缺 integration_test** → 補,讓 TestID-based AC 跑得動。
-   - backend/chat:已有,OK。
+   - api/chat:已有,OK。
 2. **mock UI 技術債** → Phase 3 前結構/lint 閘 +(已加)Phase 5→6 mock-data 清零 gate。
 3. **客戶慢**(MIS、歷史回得慢)→ 批次回饋 + branch rebase 規則降風險;Phase 2/6 仍受客戶響應牽制。
 4. **spec/plan 版本化**:UAT 改 scope → 於 ticket history 記、重發 spec.md/plan.md(round bump)。

@@ -81,14 +81,14 @@ Flutter build **可以**並行(不同 worktree 的 `build/`、`.dart_tool`、iOS
 - **`flutter run`/integration_test 上裝置**:**各給不同 simulator**(同一個 sim 一個 app 會撞);port 自動不撞。
 - **真正的並發上限 = 機器資源(CPU/RAM/IO)**,不是 correctness;2 個同時 build 一般筆電會喘 → orchestrator 設一個**資源型並發上限**(可能就 1–2),而不是「禁止並行」。
 
-**設對期待**:跨 submodule(app build 與 backend Go test)幾乎無痛並行;同 submodule 多個 Flutter build 並行**做得到但吃資源**,上限由機器決定。spec/plan/review 那些**純 subagent 思考**的等待最好 overlap(不吃 build 資源)。
+**設對期待**:跨 submodule(app build 與 api Go test)幾乎無痛並行;同 submodule 多個 Flutter build 並行**做得到但吃資源**,上限由機器決定。spec/plan/review 那些**純 subagent 思考**的等待最好 overlap(不吃 build 資源)。
 
 ## Merge / landing 序列化
 
 多條 feature 最終 merge 進同一 submodule dev branch(`<CODEBASE_BRANCH>`)→ 重疊檔案會衝。
 
 - **序列化**:一條先 merge → `<CODEBASE_BRANCH>`;其餘 **rebase** 到新 `<CODEBASE_BRANCH>` 再進。orchestrator 不並行 merge。
-- 多功能要一起上 STG → 走既有 `stg-review-bundle-convention`(本來就處理打包/落地)。
+- 多功能要一起上 STG → 走既有 `docs/2026-06-23-stg-review-bundle-convention.md`(本來就處理打包/落地)。
 - intake 階段沿用 ticket 的 `conflicts:` 標記,orchestrator 對「會動到同檔/同 branch」的 feature 排程上避免同時 implement。
 
 ## 失敗模式 + 處理(review 抓出的,明列)
