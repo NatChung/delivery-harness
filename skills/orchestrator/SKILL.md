@@ -180,6 +180,25 @@ cd codebases/<repo> && git worktree prune
 
 ---
 
+## 5b. Branch / Worktree 生命週期（implement→交付）
+
+四個分支角色,別混:
+
+| 角色 | 是什麼 | 何時生 | 何時收 |
+|------|--------|--------|--------|
+| **working-branch** | 該 repo 主力開發分支(per `pipeline.config` 的 `CODEBASE_BRANCH`)| 既存 | 永存;feature land 進這 |
+| **feature/\<NNN\>-\<slug\>** | 單一 feature 真相分支,可獨立 land | pipeline prototype/implement 階段開 | land 進 working-branch 後**可留**(各 feature 成熟度不同、分開 land) |
+| **worktree** | feature branch 的隔離 checkout 目錄(`wt.sh add`)| 5-implement 派 subagent 前 | implement 完 / 放棄 → `wt.sh remove`。**worktree ≠ branch:收 worktree 不刪 branch** |
+| **integration-bundle（\<bundle-slug\>）** | 多 feature 合併上 staging 的衍生分支,可重生 | 要一起上 staging 時 | 暫時的,測完即棄;bug 修在所屬 feature branch 再**重生** bundle,別直接改 bundle |
+
+**關鍵分辨**(實測反覆被問的):
+- 「切了 feature branch 還要 worktree 嗎」→ **要**。branch 是命名;worktree 是隔離的工作目錄,讓多 feature 並行 implement 不互踩同一 checkout。
+- 「收 worktree = 刪 branch 嗎」→ **否**。`wt.sh remove` 只收工作目錄,feature branch 還在。
+- 「bug 修哪條」→ 見 §6 的「bug 修分支歸屬」。
+- 「為何從 working-branch 不是 main」→ working-branch 由 `pipeline.config` 的 `CODEBASE_BRANCH` 定,可能 = main + 未釋出功能,**未必等於 repo 的 GitHub 預設分支**。land / PR base 對準 `CODEBASE_BRANCH`,別假設 main。
+
+---
+
 ## 6. Build / Merge / 排程
 
 **Build（可並行，但要隔離）**：
@@ -187,9 +206,38 @@ cd codebases/<repo> && git worktree prune
 - UI/integration test 各給不同 runner/emulator
 - **並行上限 = 機器資源**（spec/plan/review 純思考類可全並行）
 
-**Merge（序列化）**：一條先 merge → **該 codebase 的主 branch**（各 codebase 主 branch 見 `.claude/pipeline.config` 的 `CODEBASE_BRANCH`）；其餘 **rebase** 到新主 branch 再進。多條一起上 STG → 走 `stg-review-bundle-convention`（`stg-review-<bundle-slug>` 整合分支）。
+**Merge（序列化）**：一條先 merge → **該 codebase 的主 branch**（各 codebase 主 branch 見 `.claude/pipeline.config` 的 `CODEBASE_BRANCH`）；其餘 **rebase** 到新主 branch 再進。多條一起上 staging → 走 `integration-bundle-convention`（`integration-bundle-<bundle-slug>` 整合分支）。
 
 **排程**：ticket 的 `conflicts:` 標記的 feature（動到同檔/同 branch）→ **不同時 implement**，錯開排程避免 merge 衝突。
+
+**bug 修分支歸屬**:
+- staging / 整合 UAT 抓到的「**未上線 feature 的 bug**」→ 修在該 **feature/\<NNN\>** branch(它還沒 land),再**重生** integration-bundle。**別直接在 bundle 改**,否則該 feature 日後單獨 land 會漏掉這個 fix。
+- 「**獨立缺陷 / 已上線 code 的 bug**」→ 走 bug track(`cli.py new \<slug\> --track bug`),開 fix 分支照 bug 流程。
+
+---
+
+## 6b. Implement 之後（6-uat → 交付）
+
+⚠️ **並行段在此結束、進序列段（P4）。** intake→implement 是多 feature 並行(subagent fan-out);**6-uat 之後是單線程** —— 部署、人眼/模擬器/瀏覽器 UAT、客戶簽核都不可並行。orchestrator 的「並行」價值此段歸零,別再期待 fan-out,改成一條一條序列推。
+
+流程:
+1. **6-uat → 部署**:多 feature 一起上 staging → 走 integration-bundle(§5b)合併 → 照**該 repo 的部署 runbook 部署**。runbook 是 **fork 本地文件**(upstream 不含,因含 cluster 名/CLI 指令/憑證);fork 在 `pipeline.config` 旁放一份 deploy doc,skill 指過去。
+2. **staging UAT**:單線程,主迴圈驅動測試 MCP(browser/mobile)跑 happy + edge。
+3. **staging 抓到 bug → 接回 pipeline**:依 §6「bug 修分支歸屬」判斷修哪條 → 修 → **重生** integration-bundle → 重測(branch 操作後務必複測,別假設 binary 沒重編就沒事)。
+4. 全綠 → 客戶簽核 → `cli.py advance` 到 done → feature land 進 working-branch。
+
+---
+
+## 6c. Env 前置 + infra 除錯紀律
+
+**UAT 前先驗環境健康**(隔夜 / 換機最常斷):
+- port-forward / 本地服務起著?
+- creds / 登入態還有效?
+- 外部依賴(後端 HIS、auth、物件儲存)連得到?
+
+fork 把**實際 checklist**(host/port/服務名)放本地 `docs/ENV_PRECHECK.md`(upstream 不含實值)。UAT 前先跑一遍。
+
+**infra 症狀一律走 `superpowers:systematic-debugging`,別臆測。** 連線失敗 / auth 失敗 / 上傳 500 / 404 這類根因常在環境(配錯 SA、漏 API 白名單、URL 雙前綴、port-forward 斷),不在 code。先收集跨層證據定位哪層斷,再修;別猜一個就改。
 
 ---
 

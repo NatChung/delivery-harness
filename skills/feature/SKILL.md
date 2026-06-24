@@ -1,6 +1,6 @@
 ---
 name: feature
-description: Drive a customer feature through the delivery pipeline (intake → requirements → prototype → spec → plan → TDD → stg UAT). Use when starting, advancing, or checking a feature/CR. State lives in docs/features/<NNN>-<slug>/ticket.md; transitions are enforced by scripts/feature/cli.py.
+description: Drive a customer feature through the delivery pipeline (intake → requirements → prototype → spec → plan → TDD → staging UAT). Use when starting, advancing, or checking a feature/CR. State lives in docs/features/<NNN>-<slug>/ticket.md; transitions are enforced by scripts/feature/cli.py.
 ---
 
 # Feature Delivery Pipeline orchestrator
@@ -25,7 +25,7 @@ Run from repo root:
 - **lite** — no new UI / backend-only: skips 2-ui-prototype (3-spec writes AC over the API contract, no TestID)
 - **spike** — AI/data/external-integration: 1b-spike measures feasibility first, then convert to full or lite
 
-**選 track 別只看「我方有沒有新 UI」**:`track = max(技術上有新 UI 面, 客戶要不要先在 STG 看畫面)`。後者(客戶要先看 → full + prototype)很容易漏問,漏了就會 lite→full reopen 來回。**好消息**:`reopen` edge(`3-spec → 2-ui-prototype` 自動轉 full)讓猜錯成本很低 → **別為了一次猜對而過度糾結,猜錯 reopen 就好**。
+**選 track 別只看「我方有沒有新 UI」**:`track = max(技術上有新 UI 面, 客戶要不要先在 staging 看畫面)`。後者(客戶要先看 → full + prototype)很容易漏問,漏了就會 lite→full reopen 來回。**好消息**:`reopen` edge(`3-spec → 2-ui-prototype` 自動轉 full)讓猜錯成本很低 → **別為了一次猜對而過度糾結,猜錯 reopen 就好**。
 
 ## 讀 code 一律先用 codegraph(重要)
 
@@ -66,9 +66,9 @@ Run from repo root:
 - **5-implement(tests-green 後、進 6-uat 前)** → review 實作 diff(標準 code review)。
 - 收到 review 回饋後 → 走 `superpowers:receiving-code-review`(技術嚴謹驗證,不盲改、不表演式同意)。
 
-## 多功能一起上 STG 給客戶 review(bundle)
+## 多功能一起上 staging 給客戶 review(bundle)
 
-多個 CR 要**打包成一個 STG build** 給客戶下載試(常跨 app+api+cms)時,branch 怎麼開/合/落地 → 照 **`docs/2026-06-23-stg-review-bundle-convention.md`**(`stg-review-<bundle-slug>` 整合分支 + 五鐵則 + mock gate)。各 feature ticket 仍獨立跑 pipeline,`6-uat` = 已在 `stg-review-*` 上、客戶 review 中。
+多個 CR 要**打包成一個 staging build** 給客戶下載試(常跨 app+api+cms)時,branch 怎麼開/合/落地 → 照 **`docs/2026-06-23-integration-bundle-convention.md`**(`integration-bundle-<bundle-slug>` 整合分支 + 五鐵則 + mock gate)。各 feature ticket 仍獨立跑 pipeline,`6-uat` = 已在 `integration-bundle-*` 上、客戶 review 中。
 
 ## 效率紀律(每個 CR 重複的 tax,刻意壓)
 
