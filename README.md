@@ -1,5 +1,7 @@
 # delivery-harness
 
+**English** | [繁體中文](README.zh-TW.md)
+
 An **agent-native feature/bug delivery pipeline harness** — skills + a state-machine engine for Claude Code.
 
 > **Not affiliated with [Harness.io](https://harness.io)** (the CI/CD platform).
