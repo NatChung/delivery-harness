@@ -224,6 +224,19 @@ cd codebases/<repo> && git worktree prune
 
 ---
 
+## 6c. Env 前置 + infra 除錯紀律
+
+**UAT 前先驗環境健康**(隔夜 / 換機最常斷):
+- port-forward / 本地服務起著?
+- creds / 登入態還有效?
+- 外部依賴(後端 HIS、auth、物件儲存)連得到?
+
+fork 把**實際 checklist**(host/port/服務名)放本地 `docs/ENV_PRECHECK.md`(upstream 不含實值)。UAT 前先跑一遍。
+
+**infra 症狀一律走 `superpowers:systematic-debugging`,別臆測。** 連線失敗 / auth 失敗 / 上傳 500 / 404 這類根因常在環境(配錯 SA、漏 API 白名單、URL 雙前綴、port-forward 斷),不在 code。先收集跨層證據定位哪層斷,再修;別猜一個就改。
+
+---
+
 ## 7. Mock Gate（landing 前強制）
 
 Landing 前必須全過，才可 advance 到 done：
