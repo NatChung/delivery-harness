@@ -60,6 +60,10 @@ at runtime — keep those present, and keep `INDEX.md` an empty registry in the
 repo (header + separator, no data rows). Run a real `cli.py new` (not just the
 unit suite — it self-fixtures) when changing scaffold-dependent behavior.
 
+## Provenance:.harness-version
+
+每個 fork install 時在 `.claude/skills/.harness-version` 戳裝自哪個 upstream commit(格式見 `config/harness-version.example`)。將來要把上游改善流進 fork,以此 commit 為 baseline:`git -C <upstream> log <commit>..HEAD -- skills/ scripts/` 看 fork 落後哪些改動。同步機制本身尚未自動化(手動 / AI 輔助)。
+
 ## Commits
 
 Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`). One logical change per
