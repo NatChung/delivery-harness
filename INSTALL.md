@@ -3,10 +3,10 @@
 你(target repo 的 AI)拿到本檔 URL + 指定 prefix(例 `dek-`),照以下 9 步把 pipeline 裝進當前 repo。全程在 target repo 根目錄操作。
 
 1. fetch 本 repo 的 `skills/*`、`scripts/*`、`docs/features/*`、`config/*`、`hooks/*`(GitHub raw;raw base 例:`https://raw.githubusercontent.com/NatChung/delivery-harness/main/<path>`;從 main 取穩定版)。
-2. copy `skills/{feature,bug,orchestrator}` → `<repo>/.claude/skills/<prefix>-{feature,bug,orchestrator}/`;copy `scripts/feature` `scripts/orch` → `<repo>/scripts/`。
+2. copy `skills/{feature,bug,orchestrator}` → `<repo>/.claude/skills/<prefix>-{feature,bug,orchestrator}/`;copy `scripts/feature` `scripts/orch` → `<repo>/scripts/`。(目標目錄不存在先 `mkdir -p`,例 `.claude/skills`、`docs/features`;乾淨 repo 可能缺這些)
 3. **copy 引擎 runtime 依賴**:`docs/features/{INDEX.md,_template.md,_template_bug.md}` → `<repo>/docs/features/`(`cli.py new` 執行時要讀;缺了第一次 `cli.py new` 就炸。`INDEX.md` 保持空 registry:header + 分隔線,無 data row)。
-4. **套 prefix**:把三個 skill 目錄改名加 `<prefix>-`;改 body 內彼此 cross-ref(feature/bug 指向 orchestrator;orchestrator 指向 feature/bug)與 slash 引用(`/feature`→`/<prefix>-feature` 等);標題列的 skill 名也改。
-5. 從 `config/pipeline.config.example` 生 `<repo>/.claude/pipeline.config`,**問 user** 填:每個 codebase 的 `CODEBASE_DIR`(相對路徑)、`CODEBASE_BRANCH`(主分支)、`WT_CACHE_ROOT`(worktree 快取根)。
+4. **套 prefix**:把三個 skill 目錄改名加 `<prefix>-`;改 body 內彼此 cross-ref(feature/bug 指向 orchestrator;orchestrator 指向 feature/bug)與 slash 引用(`/feature`→`/<prefix>-feature` 等);標題列的 skill 名也改。改名只動 skill 名與 slash 指令(`/feature`→`/<prefix>-feature`),不動檔案路徑(`scripts/feature/`、`docs/features/` 保持原樣)
+5. 從 `config/pipeline.config.example` 生 `<repo>/.claude/pipeline.config`,**問 user** 填:每個 codebase 的 `CODEBASE_DIR`(相對路徑)、`CODEBASE_BRANCH`(主分支)、`WT_CACHE_ROOT`(worktree 快取根)。(若呼叫者已在指示中給齊 codebase map / branch,直接填、不必再問)
 6. **hooks**:檢查本 repo `hooks/settings.snippet.json`。若非空且與 pipeline 相關 → merge 進 `<repo>/.claude/settings.json`;若空殼 → 跳過並告知 user 無 hook 需裝。
 7. (選用)依 `mcp/README.md` 接測試 MCP(Playwright / mobile)。**post-implement UAT 重度靠 MCP** → 建議裝;不裝則 UAT 階段要另接測試工具。
 8. 生 `<repo>/.claude/skills/.harness-version`,照 `config/harness-version.example` 三行,`commit` 填 install 當下本 upstream 的 `git rev-parse HEAD`、`installed` 填今日。
