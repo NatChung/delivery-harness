@@ -1,6 +1,6 @@
 ---
 name: feature
-description: Drive a customer feature through the delivery pipeline (intake → requirements → prototype → spec → plan → TDD → stg UAT). Use when starting, advancing, or checking a feature/CR. State lives in docs/features/<NNN>-<slug>/ticket.md; transitions are enforced by scripts/feature/cli.py.
+description: Drive a customer feature through the delivery pipeline (intake → requirements → prototype → spec → plan → TDD → staging UAT). Use when starting, advancing, or checking a feature/CR. State lives in docs/features/<NNN>-<slug>/ticket.md; transitions are enforced by scripts/feature/cli.py.
 ---
 
 # Feature Delivery Pipeline orchestrator
@@ -25,7 +25,7 @@ Run from repo root:
 - **lite** — no new UI / backend-only: skips 2-ui-prototype (3-spec writes AC over the API contract, no TestID)
 - **spike** — AI/data/external-integration: 1b-spike measures feasibility first, then convert to full or lite
 
-**選 track 別只看「我方有沒有新 UI」**:`track = max(技術上有新 UI 面, 客戶要不要先在 STG 看畫面)`。後者(客戶要先看 → full + prototype)很容易漏問,漏了就會 lite→full reopen 來回。**好消息**:`reopen` edge(`3-spec → 2-ui-prototype` 自動轉 full)讓猜錯成本很低 → **別為了一次猜對而過度糾結,猜錯 reopen 就好**。
+**選 track 別只看「我方有沒有新 UI」**:`track = max(技術上有新 UI 面, 客戶要不要先在 staging 看畫面)`。後者(客戶要先看 → full + prototype)很容易漏問,漏了就會 lite→full reopen 來回。**好消息**:`reopen` edge(`3-spec → 2-ui-prototype` 自動轉 full)讓猜錯成本很低 → **別為了一次猜對而過度糾結,猜錯 reopen 就好**。
 
 ## 讀 code 一律先用 codegraph(重要)
 
