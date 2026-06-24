@@ -5,7 +5,11 @@
 1. fetch 本 repo 的 `skills/*`、`scripts/*`、`docs/features/*`、`config/*`、`hooks/*`(GitHub raw;raw base 例:`https://raw.githubusercontent.com/NatChung/delivery-harness/main/<path>`;從 main 取穩定版)。
 2. copy `skills/{feature,bug,orchestrator}` → `<repo>/.claude/skills/<prefix>-{feature,bug,orchestrator}/`;copy `scripts/feature` `scripts/orch` → `<repo>/scripts/`。(目標目錄不存在先 `mkdir -p`,例 `.claude/skills`、`docs/features`;乾淨 repo 可能缺這些)
 3. **copy 引擎 runtime 依賴**:`docs/features/{INDEX.md,_template.md,_template_bug.md}` → `<repo>/docs/features/`(`cli.py new` 執行時要讀;缺了第一次 `cli.py new` 就炸。`INDEX.md` 保持空 registry:header + 分隔線,無 data row)。
-4. **套 prefix**:把三個 skill 目錄改名加 `<prefix>-`;改 body 內彼此 cross-ref(feature/bug 指向 orchestrator;orchestrator 指向 feature/bug)與 slash 引用(`/feature`→`/<prefix>-feature` 等);標題列的 skill 名也改。改名只動 skill 名與 slash 指令(`/feature`→`/<prefix>-feature`),不動檔案路徑(`scripts/feature/`、`docs/features/` 保持原樣)
+4. **套 prefix**:把三個 skill 目錄改名加 `<prefix>-`;改 body 內彼此 cross-ref(feature/bug 指向 orchestrator;orchestrator 指向 feature/bug)與 slash 引用(`/feature`→`/<prefix>-feature` 等);標題列的 skill 名也改。**改名範圍完整清單**:
+   - skill body 內的 skill 名(`name: feature` → `name: <prefix>-feature`)與 slash 指令(`/feature` → `/<prefix>-feature`)
+   - `scripts/feature/README.md` 內的 skill 路徑引用(`.claude/skills/{feature,bug,orchestrator}/` → `.claude/skills/{<prefix>-feature,<prefix>-bug,<prefix>-orchestrator}/`)
+   - skill body 內的**範例路徑**(如 `~/.cache/delivery-wt/` 下的路徑前綴),要與 `pipeline.config` 的 `WT_CACHE_ROOT` 配置命名一致(例:若 `WT_CACHE_ROOT="${WT_CACHE_ROOT:-$HOME/.cache/<prefix>-wt}"`,則範例改寫成 `~/.cache/<prefix>-wt/...`)
+   - **不動**:state-machine 的 track 關鍵字(`full/lite/spike/bug`)與 `scripts/feature/cli.py` 引擎程式碼保持原樣;檔案路徑 `scripts/feature/`、`docs/features/` 保持原樣
 5. 從 `config/pipeline.config.example` 生 `<repo>/.claude/pipeline.config`,**問 user** 填:每個 codebase 的 `CODEBASE_DIR`(相對路徑)、`CODEBASE_BRANCH`(主分支)、`WT_CACHE_ROOT`(worktree 快取根)。(若呼叫者已在指示中給齊 codebase map / branch,直接填、不必再問)
 6. **hooks**:檢查本 repo `hooks/settings.snippet.json`。若非空且與 pipeline 相關 → merge 進 `<repo>/.claude/settings.json`;若空殼 → 跳過並告知 user 無 hook 需裝。
 7. (選用)依 `mcp/README.md` 接測試 MCP(Playwright / mobile)。**post-implement UAT 重度靠 MCP** → 建議裝;不裝則 UAT 階段要另接測試工具。
