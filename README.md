@@ -1,84 +1,84 @@
 # delivery-harness
 
-**English** | [繁體中文](README.zh-TW.md)
+**繁體中文** | [English](README.en.md)
 
-An **agent-native feature/bug delivery pipeline harness** — skills + a state-machine engine for Claude Code.
-
----
-
-## What this is
-
-`delivery-harness` gives Claude Code a **repeatable, auditable workflow** for shipping features and fixing bugs, instead of letting the agent free-form its way through the work.
-
-The problem it solves: an agent that improvises keeps its state in the conversation, leaves no record of *why* it did what it did, and has nothing stopping it from skipping steps. This harness moves the workflow's state **out of the model and onto disk**, on three load-bearing pieces:
-
-- **The ticket is the single source of truth.** Each CR or bug is a markdown file at `docs/features/<NNN>-<slug>/ticket.md` whose frontmatter holds the phase, track, and acceptance criteria, and whose body accumulates gates, links, and a phase-change history. The agent reads the ticket first and acts from it — so a session run a week later picks up exactly where the last one stopped, on any machine.
-- **The CLI is an enforced state machine.** `scripts/feature/cli.py` (`new` / `status` / `advance` / `lint`) is the *only* sanctioned way to change a ticket's phase or track. `advance` refuses illegal transitions and prints the legal set, so the agent can't quietly skip spec, plan, or UAT — the rules live in code, not in a prompt the model can talk itself out of.
-- **The skills are phase-aware entry points.** `/feature` and `/bug` drive one ticket through its track; `/orchestrator` runs several in parallel. Beyond routing, the skills encode the operating discipline the pipeline depends on: read the ticket before acting, map existing code with a code graph before editing, gate each artifact (spec, plan, diff) through a fresh-context review subagent, and decide-and-proceed on reversible choices instead of stalling.
-
-The payoff is delivery you can audit: every phase change is recorded in the ticket, every acceptance criterion is written before implementation, and the same ticket is resumable across sessions and machines.
+一套 **agent-native 的功能/錯誤交付 pipeline harness** —— 給 Claude Code 用的 skills + 狀態機引擎。
 
 ---
 
-## Tracks
+## 這是什麼
 
-| Track | Flow |
+`delivery-harness` 給 Claude Code 一條**可重複、可稽核的工作流**來交付功能與修復錯誤,而不是讓 agent 自由發揮地硬幹。
+
+它解決的問題:一個即興發揮的 agent,狀態只活在對話裡、不留下「為什麼這樣做」的紀錄、也沒有任何東西攔著它跳過步驟。這套 harness 把工作流的狀態**從模型裡搬到磁碟上**,靠三塊承重結構:
+
+- **ticket 是唯一真相來源。** 每張 CR 或 bug 是一個 markdown 檔 `docs/features/<NNN>-<slug>/ticket.md`,frontmatter 持有 phase、track、驗收條件,body 累積 gates、連結,以及 phase 變更歷史。agent 先讀 ticket 再動作 —— 所以一週後再跑的 session,會在任何一台機器上剛好從上次停下的地方接續。
+- **CLI 是被強制執行的狀態機。** `scripts/feature/cli.py`(`new` / `status` / `advance` / `lint`)是**唯一**被認可、能改 ticket phase/track 的途徑。`advance` 拒絕不合法的轉移並印出合法集合,所以 agent 沒辦法偷偷跳過 spec、plan 或 UAT —— 規則活在 code 裡,不是一段模型能說服自己繞過的 prompt。
+- **skills 是懂 phase 的進入點。** `/feature` 與 `/bug` 帶一張 ticket 走完它的 track;`/orchestrator` 並行跑好幾張。除了路由,skills 還編進了 pipeline 賴以為生的操作紀律:動作前先讀 ticket、改 code 前先用 code graph 摸清既有結構、每個產出物(spec、plan、diff)都過一個 fresh-context 的 review subagent 把關、可逆的選擇就 decide-and-proceed 而不是卡住問。
+
+成果是一條你能稽核的交付流程:每次 phase 變更都記在 ticket 裡,每條 AC 都在實作前寫好,而同一張 ticket 可跨 session、跨機器接續。
+
+---
+
+## Tracks(交付軌道)
+
+| Track | 流程 |
 |-------|------|
 | `full` | intake → requirements → UI prototype → spec → plan → implement → UAT → done |
-| `lite` | intake → requirements → spec → plan → implement → UAT → done (no UI prototype) |
+| `lite` | intake → requirements → spec → plan → implement → UAT → done(無 UI prototype) |
 | `bug` | debug → reproduction test → spec → plan → TDD fix → verify → done |
-| `spike` | intake → spike → promote to `full` or `lite` |
+| `spike` | intake → spike → 升級為 `full` 或 `lite` |
 
-The table shows the forward "happy path." The state machine also models the messier reality: **rework loops** (a failed UAT routes back to spec or implement), **reopen edges** (a `lite` CR that turns out to need a prototype converts to `full`), **spike resolution** (`spike` promotes into `full` or `lite` once feasibility is known), plus **`on-hold`** parking and **`done` / `rejected`** terminal states. Illegal jumps are refused.
+表上是順向的「happy path」。狀態機也描述了更亂的現實:**rework 回圈**(UAT 失敗會繞回 spec 或 implement)、**reopen edge**(一張 `lite` CR 後來發現需要 prototype 就轉成 `full`)、**spike 收斂**(`spike` 在 feasibility 確定後升級成 `full` 或 `lite`),外加 **`on-hold`** 暫停與 **`done` / `rejected`** 終止狀態。不合法的跳轉一律拒絕。
 
 ---
 
-## Quick start
+## 快速開始
 
-See **[INSTALL.md](INSTALL.md)** for the three-step fork guide.
+請見 **[INSTALL.md](INSTALL.md)** 的三步驟 fork 指南。
 
 ```bash
-# after install:
+# 安裝後:
 python3 scripts/feature/cli.py new my-feature --track full
-# then in Claude Code:
+# 然後在 Claude Code 裡:
 # /feature
 ```
 
 ---
 
-## Parallel orchestration
+## 平行編排(Parallel orchestration)
 
-For teams running multiple in-flight CRs simultaneously, `/orchestrator` dispatches
-background subagents per feature and coordinates their reports — keeping the main loop
-at human timescales (question, decision, delegate) while background agents do the slow work,
-with `scripts/orch/wt.sh` giving each parallel implement its own isolated worktree.
+對於同時跑多張 in-flight CR 的團隊,`/orchestrator` 會為每個功能派出
+背景 subagent 並協調它們的回報 —— 讓主迴圈保持在人類的時間尺度上
+(提問、決策、委派),而背景 agent 去做緩慢的工作,
+並由 `scripts/orch/wt.sh` 給每個並行的 implement 一個隔離的 worktree。
 
 ---
 
-## Structure
+## 結構
 
 ```
 skills/
-  feature/      # /feature skill — drives a CR through the full/lite/spike tracks
-  bug/          # /bug skill — drives a defect through the bug track
-  orchestrator/ # /orchestrator skill — parallel multi-CR coordination
+  feature/      # /feature skill —— 帶一張 CR 走過 full/lite/spike 軌道
+  bug/          # /bug skill —— 帶一個 defect 走過 bug 軌道
+  orchestrator/ # /orchestrator skill —— 平行多 CR 協調
 scripts/
-  feature/      # cli.py + state_machine.py + tests
-  orch/         # wt.sh — worktree management for parallel runs
+  feature/      # cli.py + state_machine.py + 測試
+  orch/         # wt.sh —— 平行執行用的 worktree 管理
 config/
-  pipeline.config.example   # codebase map template (copy → .claude/pipeline.config)
+  pipeline.config.example   # codebase 對照表模板(複製 → .claude/pipeline.config)
 hooks/
-  settings.snippet.json     # merge into .claude/settings.json
+  settings.snippet.json     # 併入 .claude/settings.json
 mcp/
-  .mcp.json.example         # optional: Playwright / mobile test MCP
+  .mcp.json.example         # 選用:Playwright / mobile 測試 MCP
 docs/
-  2026-06-17-feature-delivery-pipeline-design.md   # full spec
+  2026-06-17-feature-delivery-pipeline-design.md   # 完整 spec
   2026-06-23-parallel-feature-orchestrator-design.md
   2026-06-23-integration-bundle-convention.md
 ```
 
 ---
 
-## License
+## 授權
 
-MIT — see [LICENSE](LICENSE).
+MIT —— 見 [LICENSE](LICENSE)。
