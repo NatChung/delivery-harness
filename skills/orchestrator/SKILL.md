@@ -213,6 +213,7 @@ cd codebases/<repo> && git worktree prune
 **bug 修分支歸屬**:
 - staging / 整合 UAT 抓到的「**未上線 feature 的 bug**」→ 修在該 **feature/\<NNN\>** branch(它還沒 land),再**重生** integration-bundle。**別直接在 bundle 改**,否則該 feature 日後單獨 land 會漏掉這個 fix。
 - 「**獨立缺陷 / 已上線 code 的 bug**」→ 走 bug track(`cli.py new \<slug\> --track bug`),開 fix 分支照 bug 流程。
+- ⚠️ **bug track 的 phase 紀律(走 bug skill phase、repro-red gate、reproduce-confirm、review 上提)見 §6d** —— 並行跑多條 bug 時每條都要走,別自建流程繞過。
 
 ---
 
@@ -238,6 +239,30 @@ cd codebases/<repo> && git worktree prune
 fork 把**實際 checklist**(host/port/服務名)放本地 `docs/ENV_PRECHECK.md`(upstream 不含實值)。UAT 前先跑一遍。
 
 **infra 症狀一律走 `superpowers:systematic-debugging`,別臆測。** 連線失敗 / auth 失敗 / 上傳 500 / 404 這類根因常在環境(配錯 SA、漏 API 白名單、URL 雙前綴、port-forward 斷),不在 code。先收集跨層證據定位哪層斷,再修;別猜一個就改。
+
+---
+
+## 6d. Bug track —— 走 bug skill 的 phase,別自建流程繞過
+
+> 實測 RED:orchestrator 並行跑多條 bug 時最常見的失敗是「**從沒 invoke bug skill、零次 `cli.py advance`、ticket 永停 `0-intake`**」,自建一套「reproduce→fix」流程,fix subagent 交回的全是斷言內部值的 unit test(非客戶症狀)→ 幻影測試 / 假陽性 / regression 漏抓。**因為從沒走 `bug-repro` phase,`repro-red` gate 整個被繞過。** 跨 fork 都會踩,所以並行調度 bug 一律照 bug skill 的 phase 走。
+
+**`track=bug` 一律照 bug skill 的 phase 推,用 `cli.py advance` 真推進,別讓 ticket 停在 intake:**
+`0-intake → bug-debug → bug-repro → bug-fix → bug-verify → done`
+
+| phase | orchestrator 派什麼 | gate |
+|---|---|---|
+| **bug-debug** | subagent **先 invoke `superpowers:systematic-debugging`**,用 codegraph 追 root cause(`codegraph_explore/callers/callees/impact`)→ 寫進 ticket「Root cause」。🚨 **Phase 1 的「複現症狀」一律走 API/UI 客戶表面層**(手動或 repro 雛形);internal-value/unit 斷言只能當往下追因的補充 trace、不算複現。 | — |
+| **⚠️ reproduce-confirm**(進 bug-repro/bug-fix 前的 BLOCKING)| subagent 回的 root cause 是**假設**不是結論 —— **未在 API/UI 層實際複現症狀前不准開修**。intake 順暢 ≠ 已驗證;code-trace 到某行 ≠ 證實該行就是症狀因。 | API/UI 複現成立才 advance |
+| **bug-repro** | 派 bug-repro subagent 寫 **ONE failing test 在客戶症狀層(UI/API)**。對「無 fix 的 base」跑 = 紅、斷言對症狀、非 skip 才算數。 | `repro-red`:base 紅、斷言客戶看到的症狀(非內部值)、非 skip |
+| **bug-fix** | 派 bug-fix subagent 修到 **repro 測試綠**;dispatch prompt 必寫「先有症狀層 failing test、修到它綠」,不可只交 internal-value/unit 測試充數。 | `tests-green`:repro 綠 + 既有測試沒壞 |
+| **bug-verify** | 對原始報修驗(UI/API);repro 測試留成 regression。 | `bug-verified` |
+
+**review 上提主迴圈**(同 §2 步驟4):bug-fix subagent 回 `tests-green` 後,**orchestrator 主迴圈自己正式 invoke `superpowers:requesting-code-review`**(派 reviewer 兄弟 subagent、背景、讀 fix diff)→ 收 review(`receiving-code-review`)→ 才 advance 到 bug-verify。**絕不讓 fix subagent 自己叫 review**(會巢狀、結果回不到 orchestrator;§3 OVERRIDE)。
+
+**鐵則**:
+- **repro-red 先於 bug-fix**:沒有「斷言客戶症狀、會紅」的 UI/API 測試,不准進 bug-fix。**internal-value / unit 斷言(斷言內部回傳值、DTO 欄位、單一函式輸出)≠ repro-red** —— 那是 fix 的附帶單測,不是「無 fix 時會紅、斷言報修症狀」的測試。
+- **沒走 bug-repro 不准進 bug-fix**;沒 `cli.py advance` 不算走 phase。
+- 並行多條 bug 時這套 phase **每條都要走**(orchestrator 只是並行調度,不是省 phase 的藉口)。
 
 ---
 
@@ -300,6 +325,8 @@ grep -rnE "PROTOTYPE-MOCK|FEATURE-MOCK" codebases/
 5. **worktree 走 wt.sh**（不手敲 `git worktree`，不用 `isolation:"worktree"`）
 6. **load-bearing provisional 擋下游**（BLOCKING 未確認 → 該條 feature 不 advance，讓別條繼續填等待）
 7. **在飛時不跑 sync-all**
+8. **bug track 走 bug skill 的 phase**(§6d):`cli.py advance` 真推進 bug-debug→bug-repro→bug-fix→bug-verify,**別自建流程繞過**。`repro-red` 先有斷言客戶症狀、會紅的 UI/API 測試才准進 bug-fix;**internal-value / unit 斷言 ≠ repro-red**。review 上提主迴圈,別讓 fix subagent 自己叫(用 requesting-code-review subagent)。並行多 bug 每條都要走。
+9. **假設 ≠ 結論**(reproduce-confirm,§6d):subagent 回的根因是「假設」,**未在 API/UI 層實際複現證實前不開修**。intake 順暢 / code-trace 到行 ≠ 已驗證。
 
 ---
 
