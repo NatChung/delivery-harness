@@ -18,7 +18,7 @@
 
 成果是一條你能稽核的交付流程:每次 phase 變更都記在 ticket 裡,每條 AC 都在實作前寫好,而同一張 ticket 可跨 session、跨機器接續。
 
-各 phase 的實作沿用 [superpowers](https://github.com/obra/superpowers) 的通用開發 skills(brainstorming、TDD、writing-plans、code review 等);delivery-harness 加的是把它們串成一條有狀態機、ticket、prototype-first 自訂階段與平行編排的交付 pipeline。**superpowers 是必要前置依賴**(見 [INSTALL.md](INSTALL.md))。
+各 phase 的實作沿用 [superpowers](https://github.com/obra/superpowers) 的通用開發 skills(brainstorming、TDD、writing-plans、code review 等);delivery-harness 加的是把它們串成一條有狀態機、ticket、prototype-first 自訂階段與平行編排的交付 pipeline。**superpowers 是必要依賴**(安裝流程會檢查,沒裝就代裝,見 [INSTALL.md](INSTALL.md))。
 
 ---
 

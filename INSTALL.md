@@ -24,4 +24,13 @@
 前提:
 
 - repo 有 Python3(engine 純 stdlib 零依賴)。
-- **superpowers skills 已安裝**(本 pipeline 各 phase 的實作重度依賴 `superpowers:*`:brainstorming、writing-plans、test-driven-development、executing-plans、verification-before-completion、finishing-a-development-branch、requesting-code-review、systematic-debugging)。**先檢查**:Claude Code 裡 `superpowers:*` skills 是否可用(看 skill 列表,或試 `/superpowers:brainstorming`)。**沒裝 → 請 user 自行安裝**(`/plugin install superpowers@claude-plugins-official`,來源 <https://github.com/obra/superpowers>);**本安裝流程不代裝 superpowers**。缺它則 intake/spec/plan/implement/uat 各 phase 無 skill 可執行。
+- **superpowers skills(必裝,本流程代裝)**:本 pipeline 各 phase 的實作重度依賴 `superpowers:*`(brainstorming、writing-plans、test-driven-development、executing-plans、verification-before-completion、finishing-a-development-branch、requesting-code-review、systematic-debugging),缺它則 intake/spec/plan/implement/uat 各 phase 無 skill 可執行。**先檢查 → 沒裝就代裝**:
+  ```bash
+  # 檢查
+  claude plugin list | grep -i superpowers || {
+    # 沒裝 → 代裝(可移植:加 obra 的 marketplace 再裝)
+    claude plugin marketplace add obra/superpowers-marketplace
+    claude plugin install superpowers@superpowers-marketplace
+  }
+  ```
+  來源 <https://github.com/obra/superpowers>;若機器已配置 `claude-plugins-official` marketplace,亦可 `claude plugin install superpowers@claude-plugins-official`。裝完用 `claude plugin list | grep -i superpowers` 確認(plugin 需重啟 session 才載入)。
