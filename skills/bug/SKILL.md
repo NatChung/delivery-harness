@@ -28,8 +28,8 @@ Rework: `advance <id> --to bug-debug` from bug-repro or bug-verify. Triage-rejec
 - 獨立 / 已上線 → 本 bug track 繼續,開 fix 分支。
 
 2. **bug-debug** — use `superpowers:systematic-debugging`. **先用 codegraph 追 root cause**(`mcp__codegraph__codegraph_explore` 理解出問題的區塊;`codegraph_callers`/`codegraph_callees`/`codegraph_impact` 追呼叫/資料流、找壞值從哪來 + 改這會炸到誰)—— 不要無腦 grep。Find the root cause (Phase 1 evidence-gathering — do NOT guess). Record it in the ticket "Root cause" section. If it can't be reproduced, `advance --to on-hold` and gather more data. If it's not-a-bug/dup/wontfix, `advance --to rejected`.
-3. **bug-repro** — write ONE failing test that reproduces the bug (`superpowers:test-driven-development`). Layer per the bug:
-   - logic/calc → unit test (`<unit: 你的單元測試框架>`)
+3. **bug-repro** — write ONE failing test that reproduces the bug (`superpowers:test-driven-development`). Pick the layer **by where the customer sees the symptom**（見下方 🚨;不是按「bug 屬哪類」—— 下表只是起點,最終一律以「症狀被看到的那層」為準）:
+   - logic/calc **whose output IS what the customer sees**（e.g. a library / compute API where that value is the contract）→ unit test (`<unit: 你的單元測試框架>`)
    - backend behavior/contract → API test (`<API: 你的 API 測試>`)
    - UI behavior → Auto-UI script (`<UI: 你的 E2E/integration 框架>`; reuse the feature pipeline's TestID convention)
    🚨 **複現一定要在客戶實際看到症狀的那層 (the customer-facing surface — UI or API).** 選層級看「症狀在哪被人看到」不是「root cause 在哪」:UI 回報(畫面/欄位/狀態) → UI 層 assert 那一格的值;API/contract 回錯 → API 層 assert 那個回應。**就算根因在後端,只要客戶在 UI 看到症狀,repro 就寫 UI 層** —— 後端綠不證明畫面好。

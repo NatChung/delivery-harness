@@ -251,8 +251,8 @@ fork 把**實際 checklist**(host/port/服務名)放本地 `docs/ENV_PRECHECK.md
 
 | phase | orchestrator 派什麼 | gate |
 |---|---|---|
-| **bug-debug** | subagent **先 invoke `superpowers:systematic-debugging`**,用 codegraph 追 root cause(`codegraph_explore/callers/callees/impact`)→ 寫進 ticket「Root cause」。🚨 **Phase 1 的「複現症狀」一律走 API/UI 客戶表面層**(手動或 repro 雛形);internal-value/unit 斷言只能當往下追因的補充 trace、不算複現。 | — |
-| **⚠️ reproduce-confirm**(進 bug-repro/bug-fix 前的 BLOCKING)| subagent 回的 root cause 是**假設**不是結論 —— **未在 API/UI 層實際複現症狀前不准開修**。intake 順暢 ≠ 已驗證;code-trace 到某行 ≠ 證實該行就是症狀因。 | API/UI 複現成立才 advance |
+| **bug-debug** | subagent **先 invoke `superpowers:systematic-debugging`**,用 codegraph 追 root cause(`codegraph_explore/callers/callees/impact`)→ 寫進 ticket「Root cause」。🚨 **Phase 1 的「複現症狀」一律走 API/UI 客戶表面層**(手動或 repro 雛形;症狀本身就在 unit 層的少數情形除外,見 bug skill);internal-value/unit 斷言只能當往下追因的補充 trace、不算複現。 | — |
+| **⚠️ reproduce-confirm**(進 bug-fix 前的 BLOCKING;不得跳過 bug-repro)| subagent 回的 root cause 是**假設**不是結論 —— **未在 API/UI 層實際複現症狀前不准開修**。intake 順暢 ≠ 已驗證;code-trace 到某行 ≠ 證實該行就是症狀因。 | API/UI 複現成立才 advance |
 | **bug-repro** | 派 bug-repro subagent 寫 **ONE failing test 在客戶症狀層(UI/API)**。對「無 fix 的 base」跑 = 紅、斷言對症狀、非 skip 才算數。 | `repro-red`:base 紅、斷言客戶看到的症狀(非內部值)、非 skip |
 | **bug-fix** | 派 bug-fix subagent 修到 **repro 測試綠**;dispatch prompt 必寫「先有症狀層 failing test、修到它綠」,不可只交 internal-value/unit 測試充數。 | `tests-green`:repro 綠 + 既有測試沒壞 |
 | **bug-verify** | 對原始報修驗(UI/API);repro 測試留成 regression。 | `bug-verified` |
