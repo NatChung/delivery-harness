@@ -8,17 +8,15 @@ An **agent-native feature/bug delivery pipeline harness** — skills + a state-m
 
 ## What this is
 
-`delivery-harness` is a reference implementation of the **Agent Harness** pattern:
-a thin scaffold of markdown skills, a Python state machine, and bash orchestration scripts
-that give Claude Code a repeatable, auditable workflow for shipping features and fixing bugs.
+`delivery-harness` gives Claude Code a **repeatable, auditable workflow** for shipping features and fixing bugs, instead of letting the agent free-form its way through the work.
 
-The agent doesn't free-form its way through work. Instead:
+The problem it solves: an agent that improvises keeps its state in the conversation, leaves no record of *why* it did what it did, and has nothing stopping it from skipping steps. This harness moves the workflow's state **out of the model and onto disk**, on three load-bearing pieces:
 
-1. **A ticket** (`docs/features/<NNN>-<slug>/ticket.md`) holds all state — phase, track, acceptance criteria, links.
-2. **`scripts/feature/cli.py`** enforces legal phase transitions and refuses illegal ones.
-3. **Three skills** (`/feature`, `/bug`, `/orchestrator`) give Claude entry points that read the ticket and drive it forward — never guessing, always verifying.
+- **The ticket is the single source of truth.** Each CR or bug is a markdown file at `docs/features/<NNN>-<slug>/ticket.md` whose frontmatter holds the phase, track, and acceptance criteria, and whose body accumulates gates, links, and a phase-change history. The agent reads the ticket first and acts from it — so a session run a week later picks up exactly where the last one stopped, on any machine.
+- **The CLI is an enforced state machine.** `scripts/feature/cli.py` (`new` / `status` / `advance` / `lint`) is the *only* sanctioned way to change a ticket's phase or track. `advance` refuses illegal transitions and prints the legal set, so the agent can't quietly skip spec, plan, or UAT — the rules live in code, not in a prompt the model can talk itself out of.
+- **The skills are phase-aware entry points.** `/feature` and `/bug` drive one ticket through its track; `/orchestrator` runs several in parallel. Beyond routing, the skills encode the operating discipline the pipeline depends on: read the ticket before acting, map existing code with a code graph before editing, gate each artifact (spec, plan, diff) through a fresh-context review subagent, and decide-and-proceed on reversible choices instead of stalling.
 
-The result is delivery you can audit: every phase change is recorded in the ticket, every AC is written before implementation, and running Claude a week later on the same ticket picks up exactly where it left off.
+The payoff is delivery you can audit: every phase change is recorded in the ticket, every acceptance criterion is written before implementation, and the same ticket is resumable across sessions and machines.
 
 ---
 
@@ -30,6 +28,8 @@ The result is delivery you can audit: every phase change is recorded in the tick
 | `lite` | intake → requirements → spec → plan → implement → UAT → done (no UI prototype) |
 | `bug` | debug → reproduction test → spec → plan → TDD fix → verify → done |
 | `spike` | intake → spike → promote to `full` or `lite` |
+
+The table shows the forward "happy path." The state machine also models the messier reality: **rework loops** (a failed UAT routes back to spec or implement), **reopen edges** (a `lite` CR that turns out to need a prototype converts to `full`), **spike resolution** (`spike` promotes into `full` or `lite` once feasibility is known), plus **`on-hold`** parking and **`done` / `rejected`** terminal states. Illegal jumps are refused.
 
 ---
 
@@ -50,27 +50,8 @@ python3 scripts/feature/cli.py new my-feature --track full
 
 For teams running multiple in-flight CRs simultaneously, `/orchestrator` dispatches
 background subagents per feature and coordinates their reports — keeping the main loop
-at human timescales (question, decision, delegate) while background agents do the slow work.
-
----
-
-## Prior art
-
-[`heliohq/ship`](https://github.com/heliohq/ship) is a prior-art project with the same
-core concept (structured agent delivery pipeline). `delivery-harness` takes a different
-angle — tighter Claude Code skill integration, explicit state-machine enforcement, and
-parallel-orchestration primitives — but the conceptual lineage overlaps. Detailed
-differentiation write-up TBD.
-
----
-
-## Relation to Agent Harness course / Harness Notes
-
-This repo is the **reference implementation** accompanying the
-**Agent Harness** course and the
-[Harness Notes](https://natchung.beehiiv.com) newsletter.
-The course teaches the harness pattern from first principles;
-this repo is what the pattern looks like in production.
+at human timescales (question, decision, delegate) while background agents do the slow work,
+with `scripts/orch/wt.sh` giving each parallel implement its own isolated worktree.
 
 ---
 

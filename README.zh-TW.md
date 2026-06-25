@@ -8,17 +8,15 @@
 
 ## 這是什麼
 
-`delivery-harness` 是 **Agent Harness** 模式的一份參考實作:
-由一層輕薄的 markdown skills、一個 Python 狀態機,以及 bash 編排腳本組成的鷹架,
-讓 Claude Code 擁有一條可重複、可稽核的工作流來交付功能與修復錯誤。
+`delivery-harness` 給 Claude Code 一條**可重複、可稽核的工作流**來交付功能與修復錯誤,而不是讓 agent 自由發揮地硬幹。
 
-agent 不會自由發揮地硬幹。取而代之的是:
+它解決的問題:一個即興發揮的 agent,狀態只活在對話裡、不留下「為什麼這樣做」的紀錄、也沒有任何東西攔著它跳過步驟。這套 harness 把工作流的狀態**從模型裡搬到磁碟上**,靠三塊承重結構:
 
-1. **一張 ticket**(`docs/features/<NNN>-<slug>/ticket.md`)持有所有狀態 —— phase、track、驗收條件、連結。
-2. **`scripts/feature/cli.py`** 強制執行合法的 phase 轉移,並拒絕不合法的轉移。
-3. **三個 skills**(`/feature`、`/bug`、`/orchestrator`)給 Claude 進入點,讓它讀 ticket 並推動它前進 —— 從不臆測,永遠驗證。
+- **ticket 是唯一真相來源。** 每張 CR 或 bug 是一個 markdown 檔 `docs/features/<NNN>-<slug>/ticket.md`,frontmatter 持有 phase、track、驗收條件,body 累積 gates、連結,以及 phase 變更歷史。agent 先讀 ticket 再動作 —— 所以一週後再跑的 session,會在任何一台機器上剛好從上次停下的地方接續。
+- **CLI 是被強制執行的狀態機。** `scripts/feature/cli.py`(`new` / `status` / `advance` / `lint`)是**唯一**被認可、能改 ticket phase/track 的途徑。`advance` 拒絕不合法的轉移並印出合法集合,所以 agent 沒辦法偷偷跳過 spec、plan 或 UAT —— 規則活在 code 裡,不是一段模型能說服自己繞過的 prompt。
+- **skills 是懂 phase 的進入點。** `/feature` 與 `/bug` 帶一張 ticket 走完它的 track;`/orchestrator` 並行跑好幾張。除了路由,skills 還編進了 pipeline 賴以為生的操作紀律:動作前先讀 ticket、改 code 前先用 code graph 摸清既有結構、每個產出物(spec、plan、diff)都過一個 fresh-context 的 review subagent 把關、可逆的選擇就 decide-and-proceed 而不是卡住問。
 
-成果是一條你能稽核的交付流程:每次 phase 變更都記錄在 ticket 裡,每條 AC 都在實作前寫好,而一週後再對同一張 ticket 跑 Claude,它會剛好從上次停下的地方接續。
+成果是一條你能稽核的交付流程:每次 phase 變更都記在 ticket 裡,每條 AC 都在實作前寫好,而同一張 ticket 可跨 session、跨機器接續。
 
 ---
 
@@ -30,6 +28,8 @@ agent 不會自由發揮地硬幹。取而代之的是:
 | `lite` | intake → requirements → spec → plan → implement → UAT → done(無 UI prototype) |
 | `bug` | debug → reproduction test → spec → plan → TDD fix → verify → done |
 | `spike` | intake → spike → 升級為 `full` 或 `lite` |
+
+表上是順向的「happy path」。狀態機也描述了更亂的現實:**rework 回圈**(UAT 失敗會繞回 spec 或 implement)、**reopen edge**(一張 `lite` CR 後來發現需要 prototype 就轉成 `full`)、**spike 收斂**(`spike` 在 feasibility 確定後升級成 `full` 或 `lite`),外加 **`on-hold`** 暫停與 **`done` / `rejected`** 終止狀態。不合法的跳轉一律拒絕。
 
 ---
 
@@ -50,26 +50,8 @@ python3 scripts/feature/cli.py new my-feature --track full
 
 對於同時跑多張 in-flight CR 的團隊,`/orchestrator` 會為每個功能派出
 背景 subagent 並協調它們的回報 —— 讓主迴圈保持在人類的時間尺度上
-(提問、決策、委派),而背景 agent 去做緩慢的工作。
-
----
-
-## 既有相關工作(Prior art)
-
-[`heliohq/ship`](https://github.com/heliohq/ship) 是一個概念核心相同
-(結構化的 agent 交付 pipeline)的既有專案。`delivery-harness` 走的是
-不同角度 —— 更緊密的 Claude Code skill 整合、明確的狀態機強制執行,以及
-平行編排的基礎元件 —— 但概念上的血緣是重疊的。詳細的差異說明 TBD。
-
----
-
-## 與 Agent Harness 課程 / Harness Notes 的關係
-
-本 repo 是 **Agent Harness** 課程與
-[Harness Notes](https://natchung.beehiiv.com) 電子報的
-**參考實作**。
-課程從第一原理教這套 harness 模式;
-本 repo 則是這套模式在 production 裡的樣子。
+(提問、決策、委派),而背景 agent 去做緩慢的工作,
+並由 `scripts/orch/wt.sh` 給每個並行的 implement 一個隔離的 worktree。
 
 ---
 
