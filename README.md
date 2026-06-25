@@ -28,8 +28,8 @@
 |-------|------|
 | `full` | intake → requirements → UI prototype → spec → plan → implement → UAT → done |
 | `lite` | intake → requirements → spec → plan → implement → UAT → done(無 UI prototype) |
-| `bug` | debug → reproduction test → spec → plan → TDD fix → verify → done |
-| `spike` | intake → spike → 升級為 `full` 或 `lite` |
+| `bug` | intake → debug → reproduction test → TDD fix → verify → done |
+| `spike` | intake → requirements → spike → 升級為 `full` 或 `lite` |
 
 表上是順向的「happy path」。狀態機也描述了更亂的現實:**rework 回圈**(UAT 失敗會繞回 spec 或 implement)、**reopen edge**(一張 `lite` CR 後來發現需要 prototype 就轉成 `full`)、**spike 收斂**(`spike` 在 feasibility 確定後升級成 `full` 或 `lite`),外加 **`on-hold`** 暫停與 **`done` / `rejected`** 終止狀態。不合法的跳轉一律拒絕。
 

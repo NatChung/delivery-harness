@@ -28,8 +28,8 @@ The per-phase work is done by the generic development skills from [superpowers](
 |-------|------|
 | `full` | intake → requirements → UI prototype → spec → plan → implement → UAT → done |
 | `lite` | intake → requirements → spec → plan → implement → UAT → done (no UI prototype) |
-| `bug` | debug → reproduction test → spec → plan → TDD fix → verify → done |
-| `spike` | intake → spike → promote to `full` or `lite` |
+| `bug` | intake → debug → reproduction test → TDD fix → verify → done |
+| `spike` | intake → requirements → spike → promote to `full` or `lite` |
 
 The table shows the forward "happy path." The state machine also models the messier reality: **rework loops** (a failed UAT routes back to spec or implement), **reopen edges** (a `lite` CR that turns out to need a prototype converts to `full`), **spike resolution** (`spike` promotes into `full` or `lite` once feasibility is known), plus **`on-hold`** parking and **`done` / `rejected`** terminal states. Illegal jumps are refused.
 
