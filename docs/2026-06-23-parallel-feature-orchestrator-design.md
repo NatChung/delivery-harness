@@ -53,7 +53,7 @@ pipeline 每一步(spec-review、plan-review、各 implement task、build…)的
 
 ## 互動 phase 在哪跑(明確)
 
-`1-requirements`(brainstorming)、`2-ui-prototype`(客戶回饋)、`6-uat`(客戶簽核)**本質是對話,不下放給 subagent** —— 它們在 **orchestrator 主迴圈**跑(唯一能問你的層)。並行靠的是「**這條在 orchestrator 跑互動 phase 時,別條的 production subagent 在背景磨**」,不是把對話塞進 subagent。
+`1-requirements`(brainstorming,**指對話部分**)、`2-ui-prototype`(客戶回饋)、`6-uat`(客戶簽核)**本質是對話,不下放給 subagent** —— 它們在 **orchestrator 主迴圈**跑(唯一能問你的層)。並行靠的是「**這條在 orchestrator 跑互動 phase 時,別條的 production subagent 在背景磨**」,不是把對話塞進 subagent。
 - ⚠️ **brainstorming 不能 solo**:agent 獨自「provisional 決定整個需求對話」產出的是**假設(assumption)、不是驗證過的需求** —— 它漏的是對話才會浮出的 unknown-unknowns。所以 requirements 的 provisional 產出**天生標 provisional + BLOCKING**,等你(或客戶)確認。別假裝 solo 跑得出真需求。
 - ⚠️ **要對話的是需求,不是 `design.md` 寫稿**:1-requirements 的**對話**(brainstorming 澄清)在主迴圈跑;但對話收斂、澄清答定後,把結論**寫成 `design.md`** 是 production 步驟 → **照樣下放背景 subagent**(hub doc,只寫不 commit,規則同 spec/plan),主迴圈別自己花幾分鐘寫稿(違反零延遲)。順序:intake-research(read-only 草擬澄清)→ 主迴圈問你 → 答定 → 派「寫 design.md」背景 → 串行 commit + review → advance 到 prototype。
 

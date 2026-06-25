@@ -153,7 +153,7 @@ requirements 的延遲部分(讀 code + 讀文件 + 草擬澄清題)就是靠這
 | **load-bearing provisional** | 需求假設 / 下游 3+ phase 建在上面（尤其 requirements）| provisional 決定 + 繼續本 phase；**擋下游 advance** 直到你確認；記 confirmations（kind=BLOCKING） |
 | **真阻塞** | 不可逆 / 等客戶 / 花錢 / 動 prod | 即時 `AskUserQuestion`（標 feature id）；同時到的排隊逐個問 |
 
-⚠️ **brainstorming（1-requirements）的 provisional 產出天生是 BLOCKING**：agent solo 跑需求只能給假設，不是驗證過的需求（unknown-unknowns 需要對話才浮出）。requirements provisional 必標 BLOCKING，等你或客戶確認後才 advance 到 3-spec。
+⚠️ **brainstorming（1-requirements）的 provisional 產出天生是 BLOCKING**：agent solo 跑需求只能給假設，不是驗證過的需求（unknown-unknowns 需要對話才浮出）。requirements provisional 必標 BLOCKING，等你或客戶確認後才 advance 到下一 phase（full → 2-ui-prototype、lite → 3-spec）。
 
 ---
 

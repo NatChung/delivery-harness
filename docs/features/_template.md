@@ -24,7 +24,7 @@ created: {{created}}
 - plan.md: (Phase 4 產)
 
 ## Gates(agent 維護)
-- [ ] (依 track 應有的 gate,例:prototype-signoff / mock-data-cleared / tests-green / uat-signoff;spike 另加 feasibility-approved)
+- [ ] (依 track 應有的 gate,例:design-review / prototype-signoff / spec-red / mock-data-cleared / tests-green / uat-signoff;spike 另加 feasibility-approved)
 
 ## 回饋
 - (prototype / uat 回饋紀錄)

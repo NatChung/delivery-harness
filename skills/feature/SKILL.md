@@ -22,7 +22,7 @@ Run from repo root:
 ## Tracks
 
 - **full** — new UI: 0-intake → 1-requirements → 2-ui-prototype → 3-spec → 4-plan → 5-implement → 6-uat → done
-- **lite** — no new UI / backend-only: skips 2-ui-prototype (3-spec writes AC over the API contract, no TestID)
+- **lite** — no new UI / backend-only: 仍產 design.md,但 skips 2-ui-prototype(design.md 直接接 3-spec;3-spec writes AC over the API contract, no TestID)
 - **spike** — AI/data/external-integration: 1b-spike measures feasibility first, then convert to full or lite
 
 **選 track 別只看「我方有沒有新 UI」**:`track = max(技術上有新 UI 面, 客戶要不要先在 staging 看畫面)`。後者(客戶要先看 → full + prototype)很容易漏問,漏了就會 lite→full reopen 來回。**好消息**:`reopen` edge(`3-spec → 2-ui-prototype` 自動轉 full)讓猜錯成本很低 → **別為了一次猜對而過度糾結,猜錯 reopen 就好**。
