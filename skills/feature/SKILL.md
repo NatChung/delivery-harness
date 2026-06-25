@@ -50,9 +50,9 @@ Run from repo root:
 - 1b-spike ← brainstorming + a thin real spike; record a feasibility note; gate `feasibility-approved`
   - ⚠️ **spike 是抓「外部依賴不可靠」最便宜的點 —— 別只測 happy path 一兩次就過**。接外部 AI/外部系統/API 時,`feasibility-approved` 要含:**用真實典型輸入多打 N 次(≥5)測失敗/空回/非確定率 + 延遲分佈**,直打外部端點(curl,別經過自己的壓圖/封裝層)。教訓:曾因「用刁鑽大雜燴樣本 + 太少 trial」過了 gate,結果漏掉某外部服務約 1/3 空回,拖到 UAT 才爆、還一度誤判成自己的 bug。**薄證據跨系統邊界歸咎前,先做受控重複。**
 - 2-ui-prototype ← `feature-ui-prototype` (later plan) — **依 design.md** 做 UI-only+mock on a branch
-- 3-spec ← `feature-spec` (later plan) — diff branch → AC/BDD + TestID + **mock data** → spec.md;**測試靠 mock 先綠 → spec 出場抽 mock 立 RED**,把 RED 測試交給 implement(**用 codegraph 讀懂 UI 樹 + `codegraph_impact` 列 AC 要涵蓋的路徑**)
+- 3-spec ← `feature-spec` (later plan) — diff branch → AC/BDD + TestID + **測試 fixture mock** → spec.md;**測試靠 fixture mock 先綠 → spec 出場抽掉立 RED**(gate `spec-red`),把 RED 測試交給 implement(**用 codegraph 讀懂 UI 樹 + `codegraph_impact` 列 AC 要涵蓋的路徑**)
 - 4-plan ← `superpowers:writing-plans` (input = spec.md)
-- 5-implement ← `superpowers:subagent-driven-development` + `superpowers:test-driven-development` + `superpowers:executing-plans`;**收 spec 交來的 RED 測試,red→green;純 superpowers 領地,別塞抽-mock 等自訂步驟**;gate: tests-green + mock-data-cleared
+- 5-implement ← `superpowers:subagent-driven-development` + `superpowers:test-driven-development` + `superpowers:executing-plans`;**收 spec 交來的 RED 測試,red→green;純 superpowers 領地,別塞抽-mock 等自訂步驟**;gate: tests-green + mock-data-cleared(清 **prototype 產品 mock** `PROTOTYPE-MOCK`,**≠** 上面的 test fixture mock;清它是 TDD 補真邏輯的自然產物,非自訂步驟)
 - 6-uat ← `superpowers:verification-before-completion` + `superpowers:finishing-a-development-branch`
 
 ## Review(產出物把關 — 一律用 subagent,**不要**用 `/review` 或 `/code-review`)
@@ -61,7 +61,7 @@ Run from repo root:
 
 ⚠️ **不要用 `/review` 或 `/code-review`**(那是主執行緒 inline 或 cloud,不開 fresh subagent)。要的就是獨立 subagent context。
 
-- **1-requirements 後**(進 2-ui-prototype 前) → review `design.md`(doc review 角度:UI/流程設計是否完整、與需求一致、足以指導 prototype;**非** code review)。
+- **1-requirements 後**(進 2-ui-prototype 前,gate `design-review`) → review `design.md`(doc review 角度:UI/流程設計是否完整、與需求一致、足以指導 prototype;**非** code review)。
 - **3-spec 後** → review `spec.md`(doc review 角度:spec coverage / 內部一致 / placeholder 掃描 / scope / 歧義 / 完整性 / 技術可行,**非** code review)。spec/plan 是 markdown,要把 prompt template 從「code change」改寫成文件 review,並把 doc + 相關 spec/code 都餵 reviewer subagent(全域 CLAUDE.md 已定此規則)。
 - **4-plan 後** → review plan 文件(同 doc review 角度)。
 - **5-implement(tests-green 後、進 6-uat 前)** → review 實作 diff(標準 code review)。

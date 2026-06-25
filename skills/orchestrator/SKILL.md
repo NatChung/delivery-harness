@@ -11,7 +11,7 @@ Spec: `docs/2026-06-23-parallel-feature-orchestrator-design.md`
 
 ```
 主迴圈零延遲(§2 鐵則):主迴圈只做 6 件秒級事 = 收feature/問你澄清/決策/cli.py advance/派subagent/收report
-任何「讀·抓·搜·草擬·生產」要超過幾秒 → run_in_background:true 丟背景 subagent，主迴圈不自己做(含 codegraph、讀外部文件、spec/plan/impl)
+任何「讀·抓·搜·草擬·生產」要超過幾秒 → run_in_background:true 丟背景 subagent，主迴圈不自己做(含 codegraph、讀外部文件、design.md/spec/plan/impl 寫稿)
 派完背景就回頂:當輪去做下一件秒級事(問下一條 feature / 問已回報的澄清題)再交回控制權，不 inline 等
 進場先 batch 收齊 fleet(§1b:A/B/C 連文件一次給) → 各派 intake-research 背景 → 邊回邊問澄清
 決策 = reversible provisional → 往下不擋；load-bearing(需求等) → 擋下游；不可逆/等客戶/動prod → 真問
@@ -84,7 +84,7 @@ file-handoff = subagent 寫 scratchpad report；orchestrator 只收 STATUS + 一
 ```
 進場:batch 收齊 A/B/C → 各派 intake-research 背景(run_in_background) → 主迴圈回頂,不等
 A research 回(帶草擬澄清題) → 主迴圈問 user A 的澄清題   ← 此刻 B/C research 仍在背景跑
-user 答 A → cli.py advance A → 派 A 的 3-spec 背景 → 回頂
+user 答 A → 派 A 的「寫 design.md」背景 → 回頂(收回後串行 commit + review design.md → advance 到 2-ui-prototype → 再派下一階段背景)
 B research 回 → 問 user B 澄清題 …                       ← 「派完就回頂收下一個」永遠成立
 ```
 
@@ -159,7 +159,7 @@ requirements 的延遲部分(讀 code + 讀文件 + 草擬澄清題)就是靠這
 
 ## 5. Worktree（一律用 wt.sh）
 
-**只有 `5-implement`(動 submodule code)需要 worktree**;`3-spec`/`4-plan` 是 hub docs、**不開 worktree**。`wt.sh add` 前 **feature branch 要先存在**(pipeline 在 prototype/implement 階段才開 branch)。`wt.sh add` 印出的路徑是 `<repo>-<branch-slug>`(slug 過,非 `repo-NNN`),**用它印的路徑**,別自己拼。
+**只有 `5-implement`(動 submodule code)需要 worktree**;`1-requirements` 的 design.md / `3-spec` / `4-plan` 都是 hub docs、**不開 worktree**。`wt.sh add` 前 **feature branch 要先存在**(pipeline 在 prototype/implement 階段才開 branch)。`wt.sh add` 印出的路徑是 `<repo>-<branch-slug>`(slug 過,非 `repo-NNN`),**用它印的路徑**,別自己拼。
 
 ```bash
 # 開 worktree（5-implement 派 subagent 前）
