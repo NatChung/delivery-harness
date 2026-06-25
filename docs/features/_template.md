@@ -18,6 +18,11 @@ created: {{created}}
 ## Branch
 - (repo / branch / base)
 
+## 產物(artifacts)
+- design.md: (Phase 1 brainstorming 產;指導 prototype)
+- spec.md: (Phase 3 產;AC/BDD+TestID+mock)
+- plan.md: (Phase 4 產)
+
 ## Gates(agent 維護)
 - [ ] (依 track 應有的 gate,例:prototype-signoff / mock-data-cleared / tests-green / uat-signoff;spike 另加 feasibility-approved)
 

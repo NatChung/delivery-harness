@@ -18,6 +18,8 @@ The problem it solves: an agent that improvises keeps its state in the conversat
 
 The payoff is delivery you can audit: every phase change is recorded in the ticket, every acceptance criterion is written before implementation, and the same ticket is resumable across sessions and machines.
 
+On the full track the artifacts hand off in sequence: Phase 1 brainstorming produces **design.md** to direct the prototype → once the customer signs off the prototype, **spec.md** captures the AC/BDD + TestID (with mock data; the mock is stripped on exit to leave the tests RED) → handed to superpowers' TDD in implement to drive red→green.
+
 The per-phase work is done by the generic development skills from [superpowers](https://github.com/obra/superpowers) (brainstorming, TDD, writing-plans, code review, …); delivery-harness adds the shell that wires them into a delivery pipeline with a state machine, tickets, prototype-first custom phases, and parallel orchestration. **superpowers is a required dependency** (the install flow checks for it and installs it if missing — see [INSTALL.md](INSTALL.md)).
 
 ---
