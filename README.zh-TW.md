@@ -4,10 +4,6 @@
 
 一套 **agent-native 的功能/錯誤交付 pipeline harness** —— 給 Claude Code 用的 skills + 狀態機引擎。
 
-> **與 [Harness.io](https://harness.io)(CI/CD 平台)無關。**
-> 這是一套 Claude Code 的 skill harness:它把 Claude 接進一條結構化的交付工作流,
-> 而不是一個 CI/CD runner。
-
 ---
 
 ## 這是什麼

@@ -4,10 +4,6 @@
 
 An **agent-native feature/bug delivery pipeline harness** — skills + a state-machine engine for Claude Code.
 
-> **Not affiliated with [Harness.io](https://harness.io)** (the CI/CD platform).
-> This is a Claude Code skill harness: it wires Claude into a structured delivery workflow,
-> not a CI/CD runner.
-
 ---
 
 ## What this is
