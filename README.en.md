@@ -18,6 +18,8 @@ The problem it solves: an agent that improvises keeps its state in the conversat
 
 The payoff is delivery you can audit: every phase change is recorded in the ticket, every acceptance criterion is written before implementation, and the same ticket is resumable across sessions and machines.
 
+The per-phase work is done by the generic development skills from [superpowers](https://github.com/obra/superpowers) (brainstorming, TDD, writing-plans, code review, …); delivery-harness adds the shell that wires them into a delivery pipeline with a state machine, tickets, prototype-first custom phases, and parallel orchestration. **superpowers is a required prerequisite** (see [INSTALL.md](INSTALL.md)).
+
 ---
 
 ## Tracks

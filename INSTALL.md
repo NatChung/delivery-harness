@@ -21,4 +21,7 @@
 
 裝完該 repo 有 `<prefix>-{feature,bug,orchestrator}` 三個 skill + `scripts/{feature,orch}` + `docs/features/` 模板 + `.harness-version`。
 
-前提:repo 有 Python3(engine 純 stdlib 零依賴)。
+前提:
+
+- repo 有 Python3(engine 純 stdlib 零依賴)。
+- **superpowers skills 已安裝**(本 pipeline 各 phase 的實作重度依賴 `superpowers:*`:brainstorming、writing-plans、test-driven-development、executing-plans、verification-before-completion、finishing-a-development-branch、requesting-code-review、systematic-debugging)。**先檢查**:Claude Code 裡 `superpowers:*` skills 是否可用(看 skill 列表,或試 `/superpowers:brainstorming`)。**沒裝 → 請 user 自行安裝**(`/plugin install superpowers@claude-plugins-official`,來源 <https://github.com/obra/superpowers>);**本安裝流程不代裝 superpowers**。缺它則 intake/spec/plan/implement/uat 各 phase 無 skill 可執行。
