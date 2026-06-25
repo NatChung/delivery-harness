@@ -55,6 +55,7 @@ pipeline 每一步(spec-review、plan-review、各 implement task、build…)的
 
 `1-requirements`(brainstorming)、`2-ui-prototype`(客戶回饋)、`6-uat`(客戶簽核)**本質是對話,不下放給 subagent** —— 它們在 **orchestrator 主迴圈**跑(唯一能問你的層)。並行靠的是「**這條在 orchestrator 跑互動 phase 時,別條的 production subagent 在背景磨**」,不是把對話塞進 subagent。
 - ⚠️ **brainstorming 不能 solo**:agent 獨自「provisional 決定整個需求對話」產出的是**假設(assumption)、不是驗證過的需求** —— 它漏的是對話才會浮出的 unknown-unknowns。所以 requirements 的 provisional 產出**天生標 provisional + BLOCKING**,等你(或客戶)確認。別假裝 solo 跑得出真需求。
+- ⚠️ **要對話的是需求,不是 `design.md` 寫稿**:1-requirements 的**對話**(brainstorming 澄清)在主迴圈跑;但對話收斂、澄清答定後,把結論**寫成 `design.md`** 是 production 步驟 → **照樣下放背景 subagent**(hub doc,只寫不 commit,規則同 spec/plan),主迴圈別自己花幾分鐘寫稿(違反零延遲)。順序:intake-research(read-only 草擬澄清)→ 主迴圈問你 → 答定 → 派「寫 design.md」背景 → 串行 commit + review → advance 到 prototype。
 
 ## 狀態(撐過 context compaction)
 
@@ -120,7 +121,7 @@ pipeline 每一步(spec-review、plan-review、各 implement task、build…)的
 ```
 orchestrator(主迴圈)= 唯一能問你 + 派 subagent;只調度+決策,不寫 code
 並行 = run_in_background 多個 subagent,誰回處理誰
-互動 phase(1需求/2prototype/6uat)在主迴圈跑、不下放;production phase(spec/plan/implement)才下放
+互動 phase(1需求對話/2prototype/6uat)在主迴圈跑、不下放;production(design.md 寫稿/spec/plan/implement)才下放(1需求=對話在主迴圈,但答定後的 design.md 寫稿照樣下放)
 下放 = 只下放單一生產步驟,prompt 明寫覆蓋 skill review 步驟、停在 review 前;review/決策/advance 留 orchestrator
 決策 = reversible provisional → 往下不擋;load-bearing(需求等)provisional → 擋下游到你確認;不可逆/等客戶/動prod → 真問
 worktree = 手動在 submodule 內 git worktree add 到 repo 外路徑(別用 isolation:worktree);build 可並行但隔離 pub-get/Gradle-home + run 各自 sim,並發上限看機器資源;merge 序列化
