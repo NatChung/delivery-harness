@@ -115,6 +115,7 @@ context：<必要的 spec 路徑、ticket 路徑、相關 API 等>
 - bug-repro → `superpowers:test-driven-development`（寫斷言客戶症狀、會紅的測試）
 - 4-plan → `superpowers:writing-plans`
 - bug-debug → `superpowers:systematic-debugging`
+- design.md(1-requirements 寫稿）/ 3-spec → **無對應生產 skill**,照範本文字描述產出即可（brainstorming 需與 user 對話、屬主迴圈;不要在 subagent invoke）
 > 為何要明寫「invoke skill」：被 dispatch 的 subagent 因 `using-superpowers` 的 `<SUBAGENT-STOP>` **不會自己 skill-discovery**,只在 prompt 明令時才 invoke。不明寫 → 紀律退化成「只靠本範本的文字描述」、skill 原文的完整規則不會被載入。實測:一個 orchestrator run 13 個 phase 只有 bug-debug(唯一明寫 invoke 的)真 invoke 了 skill。
 
 ⚠️ OVERRIDE — 覆蓋 skill 指令，強制執行：
