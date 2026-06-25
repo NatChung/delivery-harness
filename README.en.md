@@ -60,7 +60,7 @@ with `scripts/orch/wt.sh` giving each parallel implement its own isolated worktr
 ```
 skills/
   feature/      # /feature skill — drives a CR through the full/lite/spike tracks
-  bug/          # /bug skill — drives a defect through the bug track
+  bug/          # /bug skill — drives a bug through the bug track
   orchestrator/ # /orchestrator skill — parallel multi-CR coordination
 scripts/
   feature/      # cli.py + state_machine.py + tests

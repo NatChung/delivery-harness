@@ -2,7 +2,7 @@
 
 **繁體中文** | [English](README.en.md)
 
-一套 **agent-native 的功能/錯誤交付 pipeline harness** —— 給 Claude Code 用的 skills + 狀態機引擎。
+一套 **agent-native 的功能交付 / 錯誤修復 pipeline harness** —— 給 Claude Code 用的 skills + 狀態機引擎。
 
 ---
 
@@ -14,7 +14,7 @@
 
 - **ticket 是唯一真相來源。** 每張 CR 或 bug 是一個 markdown 檔 `docs/features/<NNN>-<slug>/ticket.md`,frontmatter 持有 phase、track、驗收條件,body 累積 gates、連結,以及 phase 變更歷史。agent 先讀 ticket 再動作 —— 所以一週後再跑的 session,會在任何一台機器上剛好從上次停下的地方接續。
 - **CLI 是被強制執行的狀態機。** `scripts/feature/cli.py`(`new` / `status` / `advance` / `lint`)是**唯一**被認可、能改 ticket phase/track 的途徑。`advance` 拒絕不合法的轉移並印出合法集合,所以 agent 沒辦法偷偷跳過 spec、plan 或 UAT —— 規則活在 code 裡,不是一段模型能說服自己繞過的 prompt。
-- **skills 是懂 phase 的進入點。** `/feature` 與 `/bug` 帶一張 ticket 走完它的 track;`/orchestrator` 並行跑好幾張。除了路由,skills 還編進了 pipeline 賴以為生的操作紀律:動作前先讀 ticket、改 code 前先用 code graph 摸清既有結構、每個產出物(spec、plan、diff)都過一個 fresh-context 的 review subagent 把關、可逆的選擇就 decide-and-proceed 而不是卡住問。
+- **skills 是懂 phase 的進入點。** `/feature` 與 `/bug` 帶一張 ticket 走完它的軌道;`/orchestrator` 並行跑好幾張。除了路由,skills 還編進了 pipeline 賴以為生的操作紀律:動作前先讀 ticket、改 code 前先用 code graph 摸清既有結構、每個產出物(spec、plan、diff)都過一個 fresh-context 的 review subagent 把關、可逆的選擇就 decide-and-proceed 而不是卡住問。
 
 成果是一條你能稽核的交付流程:每次 phase 變更都記在 ticket 裡,每條 AC 都在實作前寫好,而同一張 ticket 可跨 session、跨機器接續。
 
@@ -60,7 +60,7 @@ python3 scripts/feature/cli.py new my-feature --track full
 ```
 skills/
   feature/      # /feature skill —— 帶一張 CR 走過 full/lite/spike 軌道
-  bug/          # /bug skill —— 帶一個 defect 走過 bug 軌道
+  bug/          # /bug skill —— 帶一個 bug 走過 bug 軌道
   orchestrator/ # /orchestrator skill —— 平行多 CR 協調
 scripts/
   feature/      # cli.py + state_machine.py + 測試
