@@ -1,6 +1,6 @@
 ---
 name: graph-init
-description: 在本 repo 互動式建立文件知識圖譜(docs/MAP.md + 節點 front-matter),讓 AI 能找到正確且分得清新舊的文件。Trigger:「建文件圖譜 / init 圖譜 / 把 docs 納管」這類請求,每個 repo 跑一次。
+description: Use when 要為本 repo 建立文件知識圖譜、init 圖譜、或把 docs 納管管理 —— 讓 AI 能找到正確且分得清新舊的文件。每個 repo 跑一次,互動式 pilot。
 ---
 
 # graph-init — 互動式建文件圖譜(pilot)

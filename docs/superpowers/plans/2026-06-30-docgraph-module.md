@@ -521,7 +521,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 ```markdown
 ---
 name: query
-description: 查詢本 repo 的系統知識(文件圖譜 + git + codegraph)。回答「怎麼部署 X / 為什麼這樣設計 / Y 的現狀」並能吐可執行步驟。Trigger:「`/<prefix>-query` …」或「怎麼…/為什麼…/現狀…」這類問系統的問題。唯讀導航,不改檔、不執行部署。
+description: Use when 問本 repo 的系統知識 —— 「怎麼部署 X / 為什麼這樣設計 / Y 的現狀」或任何「怎麼…/為什麼…/現狀…」這類問系統的問題,或 `/<prefix>-query`。唯讀導航,不改檔、不執行部署。
 ---
 
 # query — 查系統知識(唯讀導航)
