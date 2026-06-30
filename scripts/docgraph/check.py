@@ -36,6 +36,10 @@ def collect_md_files(root: str) -> list:
             ["git", "ls-files", "*.md"], cwd=root, stderr=subprocess.DEVNULL
         )
         files = [ln for ln in out.decode().splitlines() if ln]
+        # NOTE: load-bearing — only return on NON-empty. A git repo with no
+        # committed .md (e.g. fresh `git init` before first commit) yields an
+        # empty list; falling through to os.walk is what makes that case work.
+        # Do NOT change this to `return files` unconditionally.
         if files:
             return files
     except (subprocess.CalledProcessError, FileNotFoundError):
