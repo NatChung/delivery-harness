@@ -34,3 +34,36 @@
   }
   ```
   來源 <https://github.com/obra/superpowers>;若機器已配置 `claude-plugins-official` marketplace,亦可 `claude plugin install superpowers@claude-plugins-official`。裝完用 `claude plugin list | grep -i superpowers` 確認(plugin 需重啟 session 才載入)。
+
+---
+
+## doc-graph module(可獨立裝,不綁 feature/bug pipeline)
+
+把文件知識圖譜層裝進 target repo。可單獨裝(不需先裝 feature pipeline)。指定 `<prefix>`(例 `dek-`)。
+
+1. fetch 本 repo `skills/{graph-init,query}`、`scripts/docgraph/`、`docs/docgraph/MAP.template.md`(GitHub raw,從 main)。
+2. copy:
+   - `skills/graph-init` → `<repo>/.claude/skills/<prefix>-graph-init/`(含 `schema.md`)
+   - `skills/query` → `<repo>/.claude/skills/<prefix>-query/`
+   - `scripts/docgraph` → `<repo>/scripts/docgraph/`(含 `check.py`、`test_check.py`)
+   - `docs/docgraph/MAP.template.md` → `<repo>/docs/docgraph/MAP.template.md`
+   (目標目錄不存在先 `mkdir -p`)
+3. **套 prefix**:
+   - 兩支 skill 的 `name:`(`graph-init`→`<prefix>-graph-init`、`query`→`<prefix>-query`)
+   - **所有 `` `/<prefix>-…` `` backtick slash-command 佔位**(在 `name:` 行、`description:` 行、body 內都有 —— ⚠️ **description 行的 slash-command 別漏**,C1 教訓:漏了驗收③ grep 會命中裸 slash-command)→ 套成真 prefix
+   - graph-init 收尾的 `` `/<prefix>-query` `` cross-ref(同上,backtick 佔位替換即涵蓋)
+   - `MAP.template.md` 內的 `<prefix>-query`/`<prefix>-graph-init` 佔位
+   - **不動**:`scripts/docgraph/` 路徑、`check.py`/`test_check.py` code、`docs/MAP.md` 路徑(都不套 prefix)
+4. **codegraph(外部 optional、不代裝)**:告知 user —— query 的純 code 快捷路徑靠 `codegraph`(user 機器層級 MCP)。建議 user 自行 `codegraph init`;未裝則純 code 問題退化走 grep,文件圖譜半邊不受影響。
+5. **驗收三條**,全綠才算裝成:
+   - `cd <repo>/scripts/docgraph && python3 -m unittest -v` → 驗證器測試綠(14 test)。
+   - `cd <repo> && python3 scripts/docgraph/check.py; echo $?` → 印「乾淨」且 `0`(repo 尚無 `docs/MAP.md`,走 MAP-不存在分支)。
+   - 改名零殘留(排除路徑語境,**別用裸 grep**):
+     ```
+     grep -rnE "(^|[^A-Za-z0-9_/-])/(graph-init|query)([^A-Za-z0-9_/-]|$)" <repo>/.claude/skills/<prefix>-graph-init <repo>/.claude/skills/<prefix>-query
+     ```
+     `/query` 高碰撞 → skill 內 slash-command 都寫 backtick 形式,確認剩下的命中都已是 `<prefix>-` 開頭、無裸 `/graph-init`、`/query`。
+
+裝完該 repo 有 `<prefix>-{graph-init,query}` 兩個 skill + `scripts/docgraph/` + `docs/docgraph/MAP.template.md`。下一步:跑 `` `/<prefix>-graph-init` `` 互動建第一版圖。
+
+前提:repo 有 Python3(驗證器純 stdlib)。codegraph 為 optional(見 step 4)。
