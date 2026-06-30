@@ -402,7 +402,7 @@ per-domain markdown 表,每列一節點:
 - `type` 詞彙 = 檔案級 enum(`runbook|spec|adr|reference|bug`)∪ `{procedure}`。
 ```
 
-> 註:上面 yaml/markdown fence 在實際檔案用三個反引號(此處為避免巢狀 fence 顯示而轉義),寫檔時還原成正常 ```。
+> ⚠️ 註(M1):上面 `\`\`\`yaml` / `\`\`\`markdown` 的反斜線**只是本計畫為避免巢狀 fence 顯示的轉義**。寫進真實 `schema.md` 時用**正常三反引號、不帶任何反斜線**(`` ```yaml ``、`` ```markdown ``)。別把 `\` 照字面寫進檔。
 
 - [ ] **Step 4: Commit**
 
@@ -521,7 +521,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 ```markdown
 ---
 name: query
-description: 查詢本 repo 的系統知識(文件圖譜 + git + codegraph)。回答「怎麼部署 X / 為什麼這樣設計 / Y 的現狀」並能吐可執行步驟。Trigger:「/query …」或「怎麼…/為什麼…/現狀…」這類問系統的問題。唯讀導航,不改檔、不執行部署。
+description: 查詢本 repo 的系統知識(文件圖譜 + git + codegraph)。回答「怎麼部署 X / 為什麼這樣設計 / Y 的現狀」並能吐可執行步驟。Trigger:「`/<prefix>-query` …」或「怎麼…/為什麼…/現狀…」這類問系統的問題。唯讀導航,不改檔、不執行部署。
 ---
 
 # query — 查系統知識(唯讀導航)
@@ -593,8 +593,9 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
    - `docs/docgraph/MAP.template.md` → `<repo>/docs/docgraph/MAP.template.md`
    (目標目錄不存在先 `mkdir -p`)
 3. **套 prefix**:
-   - 兩支 skill 的 `name:`(`graph-init`→`<prefix>-graph-init`、`query`→`<prefix>-query`)與 body 內 backtick slash-command(`` `/graph-init` ``、`` `/query` ``→ 加 prefix)
-   - 兩支 skill 內互指(graph-init 收尾指向 `<prefix>-query`;query 指 schema.md 時用 `<prefix>-graph-init`)
+   - 兩支 skill 的 `name:`(`graph-init`→`<prefix>-graph-init`、`query`→`<prefix>-query`)
+   - **所有 `` `/<prefix>-…` `` backtick slash-command 佔位**(在 `name:` 行、`description:` 行、body 內都有 —— ⚠️ **description 行的 slash-command 別漏**,C1 教訓:漏了驗收③ grep 會命中裸 slash-command)→ 套成真 prefix
+   - graph-init 收尾的 `` `/<prefix>-query` `` cross-ref(同上,backtick 佔位替換即涵蓋)
    - `MAP.template.md` 內的 `<prefix>-query`/`<prefix>-graph-init` 佔位
    - **不動**:`scripts/docgraph/` 路徑、`check.py`/`test_check.py` code、`docs/MAP.md` 路徑(都不套 prefix)
 4. **codegraph(外部 optional、不代裝)**:告知 user —— query 的純 code 快捷路徑靠 `codegraph`(user 機器層級 MCP)。建議 user 自行 `codegraph init`;未裝則純 code 問題退化走 grep,文件圖譜半邊不受影響。
@@ -631,7 +632,8 @@ echo "=== 驗收② check.py 乾淨 ===" && ( cd "$DEST" && python3 scripts/docg
 echo "=== 驗收③ 改名零殘留 ===" && grep -rnE "(^|[^A-Za-z0-9_/-])/(graph-init|query)([^A-Za-z0-9_/-]|$)" "$DEST/.claude/skills/dek-graph-init" "$DEST/.claude/skills/dek-query" || echo "零殘留 OK"
 rm -rf "$DEST"
 ```
-Expected: ① `OK`(14 test);② 印「乾淨」+`exit=0`;③ `零殘留 OK`(無裸 `/graph-init`、`/query`)。
+Expected: ① `OK`(14 test);② 印「乾淨」+`exit=0`;③ `零殘留 OK`(無裸 `/graph-init`、`/query` —— 含 description 行,C1 已修)。
+> 註(I3):DEST 只 `git init` 未 commit → `collect_md_files` 的 `git ls-files *.md` 回空 → 走 `os.walk` fallback 收檔,這是此驗收的隱含前提。若日後改 `collect_md_files` 成「git ls-files 成功(即使空 list)就 return」會破這條,別這樣改。
 
 - [ ] **Step 3: Commit**
 
